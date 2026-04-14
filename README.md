@@ -1,7 +1,11 @@
-✈️ Flight Booking Web App
+<h1 align="center">✈️ AEROBOOK</h1>
+
+AeroBook is a modern, high-performance web application designed for searching, booking, and managing flight tickets.
 
 
-📌 Project Description
+
+
+Project Description
 
 Flight Booking Web App is a web application for searching, booking, and purchasing flight tickets.
 
