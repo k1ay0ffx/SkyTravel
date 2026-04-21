@@ -1,1 +1,108 @@
-<p>profile works!</p>
+<div class="profile-page">
+  <div class="profile-header">
+    <div class="avatar-big">{{ initials }}</div>
+    <div class="profile-info">
+      <h1>{{ user.first_name }} {{ user.last_name }}</h1>
+      <p>{{ user.email }}</p>
+    </div>
+  </div>
+
+  <div class="profile-layout">
+    <!-- Sidebar nav -->
+    <aside class="profile-nav">
+      <button class="pnav-btn" [class.active]="tab==='personal'" (click)="tab='personal'">
+        👤 Личные данные
+      </button>
+      <button class="pnav-btn" [class.active]="tab==='passport'" (click)="tab='passport'">
+        📄 Паспорт
+      </button>
+      <button class="pnav-btn" [class.active]="tab==='security'" (click)="tab='security'">
+        🔒 Безопасность
+      </button>
+      <button class="pnav-btn" routerLink="/bookings">
+        🎫 Мои поездки
+      </button>
+    </aside>
+
+    <!-- Content -->
+    <div class="profile-content">
+
+      <!-- Personal -->
+      <div *ngIf="tab==='personal'" class="content-card">
+        <h2>Личные данные</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Имя</label>
+            <input type="text" [(ngModel)]="user.first_name">
+          </div>
+          <div class="form-group">
+            <label>Фамилия</label>
+            <input type="text" [(ngModel)]="user.last_name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="user.email">
+        </div>
+        <div class="form-group">
+          <label>Телефон</label>
+          <input type="tel" [(ngModel)]="user.phone" placeholder="+7 777 000 00 00">
+        </div>
+        <div class="form-group">
+          <label>Дата рождения</label>
+          <input type="date" [(ngModel)]="user.date_of_birth">
+        </div>
+        <div class="success-msg" *ngIf="savedPersonal">✓ Сохранено</div>
+        <button class="btn-save" (click)="savePersonal()">Сохранить изменения</button>
+      </div>
+
+      <!-- Passport -->
+      <div *ngIf="tab==='passport'" class="content-card">
+        <h2>Паспортные данные</h2>
+        <p class="hint">Эти данные автоматически заполняются при бронировании</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Номер паспорта</label>
+            <input type="text" [(ngModel)]="user.passport_number" placeholder="N1234567">
+          </div>
+          <div class="form-group">
+            <label>Срок действия</label>
+            <input type="date" [(ngModel)]="user.passport_expiry">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Гражданство</label>
+          <select [(ngModel)]="user.nationality">
+            <option value="KZ">Казахстан</option>
+            <option value="RU">Россия</option>
+            <option value="US">США</option>
+            <option value="OTHER">Другое</option>
+          </select>
+        </div>
+        <div class="success-msg" *ngIf="savedPassport">✓ Сохранено</div>
+        <button class="btn-save" (click)="savePassport()">Сохранить</button>
+      </div>
+
+      <!-- Security -->
+      <div *ngIf="tab==='security'" class="content-card">
+        <h2>Изменить пароль</h2>
+        <div class="form-group">
+          <label>Текущий пароль</label>
+          <input type="password" [(ngModel)]="oldPassword" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label>Новый пароль</label>
+          <input type="password" [(ngModel)]="newPassword" placeholder="Минимум 8 символов">
+        </div>
+        <div class="form-group">
+          <label>Подтвердить пароль</label>
+          <input type="password" [(ngModel)]="confirmPassword" placeholder="Повторите новый пароль">
+        </div>
+        <div class="error-msg" *ngIf="passError">{{ passError }}</div>
+        <div class="success-msg" *ngIf="savedSecurity">✓ Пароль изменён</div>
+        <button class="btn-save" (click)="changePassword()">Изменить пароль</button>
+      </div>
+
+    </div>
+  </div>
+</div>

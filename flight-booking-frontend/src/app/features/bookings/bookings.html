@@ -1,1 +1,91 @@
-<p>bookings works!</p>
+<div class="bookings-page">
+  <div class="page-header">
+    <h1>Мои поездки</h1>
+    <p>История бронирований и активные билеты</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab==='upcoming'" (click)="activeTab='upcoming'">
+      Предстоящие <span class="badge">{{ upcoming.length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab==='past'" (click)="activeTab='past'">
+      Прошедшие
+    </button>
+    <button class="tab" [class.active]="activeTab==='cancelled'" (click)="activeTab='cancelled'">
+      Отменённые
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="skeleton-list" *ngIf="isLoading">
+    <div class="skeleton-item" *ngFor="let i of [1,2,3]"></div>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!isLoading && currentList.length === 0">
+    <div class="empty-icon">🎫</div>
+    <h3>Пока нет поездок</h3>
+    <p>Найдите рейс и забронируйте билет</p>
+    <button class="btn-primary" routerLink="/">Найти рейс</button>
+  </div>
+
+  <!-- Booking cards -->
+  <div class="bookings-list" *ngIf="!isLoading && currentList.length > 0">
+    <div class="booking-card" *ngFor="let b of currentList" (click)="openBooking(b.id)">
+
+      <div class="bc-status" [class]="'status-' + b.status">
+        {{ statusLabel(b.status) }}
+      </div>
+
+      <div class="bc-main">
+        <div class="bc-route">
+          <div class="bc-city">
+            <div class="bc-code">{{ b.flight.origin.iata_code }}</div>
+            <div class="bc-name">{{ b.flight.origin.city }}</div>
+          </div>
+          <div class="bc-line">
+            <div class="bc-flight-num">{{ b.flight.flight_number }}</div>
+            <div class="bc-arrow">✈ ─────────────────</div>
+            <div class="bc-stops">{{ b.flight.stops === 0 ? 'Прямой' : b.flight.stops + ' пересадка' }}</div>
+          </div>
+          <div class="bc-city right">
+            <div class="bc-code">{{ b.flight.destination.iata_code }}</div>
+            <div class="bc-name">{{ b.flight.destination.city }}</div>
+          </div>
+        </div>
+
+        <div class="bc-details">
+          <div class="bc-detail">
+            <span class="dl">Дата</span>
+            <span>{{ b.flight.departure_time | date:'d MMM yyyy, HH:mm' }}</span>
+          </div>
+          <div class="bc-detail">
+            <span class="dl">Места</span>
+            <span>{{ b.seat_numbers.join(', ') }}</span>
+          </div>
+          <div class="bc-detail">
+            <span class="dl">Пассажиры</span>
+            <span>{{ b.passengers.length }}</span>
+          </div>
+          <div class="bc-detail">
+            <span class="dl">Класс</span>
+            <span>{{ b.cabin_class === 'economy' ? 'Эконом' : 'Бизнес' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bc-footer">
+        <div class="bc-ref">
+          <span class="dl">Номер бронирования</span>
+          <span class="bc-ref-num">{{ b.booking_reference }}</span>
+        </div>
+        <div class="bc-price">{{ b.total_price | number }} ₸</div>
+        <div class="bc-actions" (click)="$event.stopPropagation()">
+          <button class="btn-outline" (click)="downloadTicket(b)">⬇ Билет</button>
+          <button class="btn-cancel" *ngIf="b.status === 'confirmed'" (click)="cancelBooking(b.id)">Отменить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

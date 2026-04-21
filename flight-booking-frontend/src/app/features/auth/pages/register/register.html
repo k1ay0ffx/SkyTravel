@@ -1,1 +1,70 @@
-<p>register works!</p>
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="logo-icon">✈</div>
+      Sky<span>Travel</span>
+    </div>
+
+    <h1>Создать аккаунт</h1>
+    <p class="auth-sub">Регистрация займёт меньше минуты</p>
+
+    <div class="error-banner" *ngIf="errorMsg">⚠ {{ errorMsg }}</div>
+    <div class="success-banner" *ngIf="successMsg">✓ {{ successMsg }}</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Имя</label>
+        <input type="text" [(ngModel)]="firstName" placeholder="Александр"
+               [class.error]="submitted && !firstName">
+      </div>
+      <div class="form-group">
+        <label>Фамилия</label>
+        <input type="text" [(ngModel)]="lastName" placeholder="Смирнов"
+               [class.error]="submitted && !lastName">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" placeholder="your@email.com"
+             [class.error]="submitted && !email">
+    </div>
+
+    <div class="form-group">
+      <label>Пароль</label>
+      <div class="input-wrap">
+        <input [type]="showPass ? 'text' : 'password'" [(ngModel)]="password"
+               placeholder="Минимум 8 символов"
+               [class.error]="submitted && password.length < 8">
+        <button class="eye-btn" (click)="showPass = !showPass">{{ showPass ? '🙈' : '👁' }}</button>
+      </div>
+      <div class="pass-strength" *ngIf="password.length > 0">
+        <div class="bar" [style.width.%]="passStrengthPct" [class]="passStrengthClass"></div>
+        <span>{{ passStrengthLabel }}</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Подтвердите пароль</label>
+      <input type="password" [(ngModel)]="confirmPassword" placeholder="Повторите пароль"
+             [class.error]="submitted && confirmPassword !== password">
+    </div>
+
+    <label class="checkbox-wrap">
+      <input type="checkbox" [(ngModel)]="agreeTerms">
+      <span class="checkmark"></span>
+      <span>Я согласен с <a routerLink="/terms">условиями использования</a></span>
+    </label>
+
+    <button class="btn-auth" [class.loading]="isLoading" (click)="register()" [disabled]="isLoading">
+      <span *ngIf="!isLoading">Зарегистрироваться</span>
+      <span *ngIf="isLoading" class="spinner"></span>
+    </button>
+
+    <p class="auth-footer">
+      Уже есть аккаунт? <a routerLink="/auth/login">Войти</a>
+    </p>
+  </div>
+  <div class="auth-bg-text">SkyTravel</div>
+</div>

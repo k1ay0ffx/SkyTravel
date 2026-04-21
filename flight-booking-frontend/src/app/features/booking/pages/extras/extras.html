@@ -1,1 +1,64 @@
-<p>extras works!</p>
+<div class="extras-page page-content">
+  <div class="container">
+
+    <div class="page-header">
+      <div class="step-badge">Шаг 2 из 3</div>
+      <h1 class="page-title">Дополнительные услуги</h1>
+      <p class="page-sub">Сделайте перелёт комфортнее</p>
+    </div>
+
+    <!-- Categories -->
+    <div class="categories">
+      <div class="category" *ngFor="let cat of CATEGORIES">
+        <div class="category-header">
+          <span class="cat-label">{{ TYPE_LABEL[cat] }}</span>
+          <span class="cat-count">{{ byCategory(cat).length }}</span>
+        </div>
+
+        <div class="extras-grid">
+          <div
+            class="extra-card"
+            *ngFor="let extra of byCategory(cat)"
+            [class.selected]="extra.selected"
+            (click)="toggle(extra)"
+          >
+            <div class="extra-icon">{{ extra.icon }}</div>
+            <div class="extra-body">
+              <div class="extra-name">{{ extra.name }}</div>
+              <div class="extra-desc">{{ extra.description }}</div>
+            </div>
+            <div class="extra-right">
+              <div class="extra-price">{{ extra.price.toLocaleString('ru-RU') }} ₸</div>
+              <div class="extra-check" [class.checked]="extra.selected">
+                <span *ngIf="extra.selected">✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary bar -->
+    <div class="summary-bar">
+      <div class="summary-left">
+        <span class="summary-label" *ngIf="selectedExtras.length === 0">
+          Ничего не выбрано
+        </span>
+        <span class="summary-label" *ngIf="selectedExtras.length > 0">
+          Выбрано: {{ selectedExtras.length }} услуг
+        </span>
+        <span class="summary-price" *ngIf="totalExtrasPrice > 0">
+          +{{ totalExtrasPrice.toLocaleString('ru-RU') }} ₸
+        </span>
+      </div>
+
+      <div class="summary-actions">
+        <button class="btn-skip" (click)="skip()">Пропустить</button>
+        <button class="btn-continue" (click)="continue()">
+          Продолжить →
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,256 @@
+:host { display: block; }
+
+.flight-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-family: 'DM Sans', sans-serif;
+  color: #fff;
+
+  &:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  &.selected {
+    border-color: rgba(255,107,43,0.5);
+    background: rgba(255,107,43,0.06);
+  }
+}
+
+.card-main {
+  display: grid;
+  grid-template-columns: 180px 1fr 160px;
+  align-items: center;
+  gap: 24px;
+  padding: 22px 24px;
+}
+
+/* ─── AIRLINE ─── */
+.airline-col {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.airline-logo {
+  width: 44px; height: 44px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.8);
+  flex-shrink: 0;
+}
+
+.airline-name {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.flight-num {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+}
+
+/* ─── ROUTE ─── */
+.route-col {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.time-block {
+  text-align: left;
+  min-width: 64px;
+
+  &.right { text-align: right; }
+
+  .time {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .airport {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 2px;
+  }
+
+  .city-name {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+  }
+}
+
+.duration-col {
+  flex: 1;
+  text-align: center;
+
+  .duration {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 6px;
+  }
+
+  .line-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+
+    .line {
+      flex: 1;
+      height: 1px;
+      background: rgba(255,255,255,0.2);
+    }
+
+    .plane-dot {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 14px;
+      background: #0D1B3E;
+      padding: 0 4px;
+    }
+  }
+
+  .stops {
+    font-size: 12px;
+
+    .direct { color: #4ade80; }
+    .one-stop { color: #facc15; }
+    .multi-stop { color: #f87171; }
+  }
+}
+
+/* ─── PRICE ─── */
+.price-col {
+  text-align: right;
+
+  .price {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #F5C842;
+    line-height: 1;
+    margin-bottom: 4px;
+
+    span { font-size: 18px; }
+  }
+
+  .per-person {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 12px;
+  }
+}
+
+.btn-select {
+  background: #FF6B2B;
+  border: none;
+  color: #fff;
+  padding: 9px 20px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+
+  &:hover { background: #FF8F5E; }
+
+  .selected & {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+}
+
+/* ─── TAGS ─── */
+.card-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+
+  &.refund { color: #4ade80; border-color: rgba(74,222,128,0.25); background: rgba(74,222,128,0.06); }
+  &.no-refund { color: rgba(255,255,255,0.35); }
+  &.discount { color: #FF8F5E; border-color: rgba(255,143,94,0.3); background: rgba(255,107,43,0.08); }
+}
+
+.tag-spacer { flex: 1; }
+
+.details-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.2s;
+
+  &:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.05); }
+}
+
+/* ─── DETAILS ─── */
+.card-details {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 16px 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  background: rgba(255,255,255,0.02);
+  animation: slideDown 0.2s ease;
+}
+
+.detail-row {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+
+  .detail-label { color: rgba(255,255,255,0.4); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .card-main {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .route-col { justify-content: space-between; }
+  .price-col { text-align: left; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .btn-select { width: auto; }
+}

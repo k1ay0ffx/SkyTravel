@@ -1,1 +1,157 @@
-<p>seat works!</p>
+<div class="seat-page">
+
+  <!-- Booking progress -->
+  <div class="progress-bar">
+    <div class="progress-inner">
+      <div class="step done">✓ Рейс</div>
+      <div class="step-line done"></div>
+      <div class="step active">2 Места</div>
+      <div class="step-line"></div>
+      <div class="step">3 Оплата</div>
+    </div>
+  </div>
+
+  <div class="seat-layout">
+
+    <!-- ── PLANE DIAGRAM ── -->
+    <div class="plane-section">
+      <h2>Выберите место</h2>
+
+      <!-- Legend -->
+      <div class="seat-legend">
+        <div class="legend-item">
+          <div class="seat-demo available"></div>
+          <span>Свободно</span>
+        </div>
+        <div class="legend-item">
+          <div class="seat-demo selected-demo"></div>
+          <span>Выбрано</span>
+        </div>
+        <div class="legend-item">
+          <div class="seat-demo occupied"></div>
+          <span>Занято</span>
+        </div>
+        <div class="legend-item">
+          <div class="seat-demo extra-legroom"></div>
+          <span>Доп. место для ног</span>
+        </div>
+      </div>
+
+      <!-- Plane map -->
+      <div class="plane-map">
+
+        <!-- Nose -->
+        <div class="plane-nose">✈ Нос самолёта</div>
+
+        <!-- Column labels -->
+        <div class="col-labels">
+          <div class="row-label"></div>
+          <div class="col-label">A</div>
+          <div class="col-label">B</div>
+          <div class="col-label">C</div>
+          <div class="aisle"></div>
+          <div class="col-label">D</div>
+          <div class="col-label">E</div>
+          <div class="col-label">F</div>
+        </div>
+
+        <!-- Seat rows -->
+        <div class="seat-row" *ngFor="let row of seatRows; let i = index">
+          <!-- First class banner -->
+          <div class="class-banner" *ngIf="i === 0">Бизнес-класс</div>
+          <div class="class-banner economy" *ngIf="i === 4">Эконом-класс</div>
+
+          <div class="row-label">{{ row.number }}</div>
+
+          <!-- Left seats (A B C) -->
+          <div class="seat-btn"
+               *ngFor="let seat of row.left"
+               [class]="getSeatClass(seat)"
+               [title]="getSeatTitle(seat)"
+               (click)="selectSeat(seat)">
+            <span *ngIf="isMySelected(seat)">✓</span>
+            <span *ngIf="!isMySelected(seat) && seat.status !== 'occupied'">{{ seat.column }}</span>
+            <span *ngIf="seat.status === 'occupied'">✗</span>
+          </div>
+
+          <!-- Aisle -->
+          <div class="aisle">{{ row.number }}</div>
+
+          <!-- Right seats (D E F) -->
+          <div class="seat-btn"
+               *ngFor="let seat of row.right"
+               [class]="getSeatClass(seat)"
+               [title]="getSeatTitle(seat)"
+               (click)="selectSeat(seat)">
+            <span *ngIf="isMySelected(seat)">✓</span>
+            <span *ngIf="!isMySelected(seat) && seat.status !== 'occupied'">{{ seat.column }}</span>
+            <span *ngIf="seat.status === 'occupied'">✗</span>
+          </div>
+        </div>
+
+        <!-- Tail -->
+        <div class="plane-tail">Хвост</div>
+      </div>
+    </div>
+
+    <!-- ── SIDE PANEL ── -->
+    <div class="seat-info-panel">
+
+      <!-- Flight summary -->
+      <div class="flight-summary-card">
+        <div class="fs-route">
+          <span>{{ fromCode }}</span>
+          <span class="fs-arrow">✈</span>
+          <span>{{ toCode }}</span>
+        </div>
+        <div class="fs-details">{{ airline }} · {{ flightNumber }} · {{ flightDate }}</div>
+      </div>
+
+      <!-- Selected seats -->
+      <div class="selected-seats-card">
+        <h3>Выбранные места</h3>
+        <div class="selected-list" *ngIf="selectedSeats.length > 0">
+          <div class="selected-item" *ngFor="let s of selectedSeats">
+            <div class="si-num">{{ s.row }}{{ s.col }}</div>
+            <div class="si-info">
+              <div class="si-type">{{ s.type }}</div>
+              <div class="si-price" *ngIf="s.extraCost > 0">+{{ s.extraCost | number }} ₸</div>
+              <div class="si-price free" *ngIf="s.extraCost === 0">Бесплатно</div>
+            </div>
+            <button class="si-remove" (click)="removeSeat(s)">✕</button>
+          </div>
+        </div>
+        <div class="no-seat" *ngIf="selectedSeats.length === 0">
+          Нажмите на место для выбора
+        </div>
+      </div>
+
+      <!-- Price breakdown -->
+      <div class="price-breakdown">
+        <div class="pb-row">
+          <span>Базовая цена</span>
+          <span>{{ basePrice | number }} ₸</span>
+        </div>
+        <div class="pb-row" *ngIf="extraSeatCost > 0">
+          <span>Доп. за места</span>
+          <span>+{{ extraSeatCost | number }} ₸</span>
+        </div>
+        <div class="pb-row total">
+          <span>Итого</span>
+          <span>{{ totalPrice | number }} ₸</span>
+        </div>
+      </div>
+
+      <button class="btn-continue"
+              [disabled]="selectedSeats.length === 0"
+              (click)="goToCheckout()">
+        Продолжить →
+      </button>
+
+      <button class="btn-skip" (click)="goToCheckout()">
+        Пропустить выбор мест
+      </button>
+
+    </div>
+  </div>
+</div>

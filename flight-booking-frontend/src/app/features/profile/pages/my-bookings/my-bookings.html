@@ -1,1 +1,113 @@
-<p>my-bookings works!</p>
+<div class="bookings-page page-content">
+  <div class="container">
+
+    <div class="page-header">
+      <h1 class="page-title">Мои билеты</h1>
+      <a class="btn-search" routerLink="/search">+ Найти рейс</a>
+    </div>
+
+    <!-- Loading -->
+    <div class="state-block" *ngIf="loading">
+      <div class="skeleton-card" *ngFor="let i of [1, 2, 3]"></div>
+    </div>
+
+    <!-- Error -->
+    <div class="state-block error-block" *ngIf="!loading && error">
+      <p>⚠ {{ error }}</p>
+      <button class="btn-retry" (click)="load()">Повторить</button>
+    </div>
+
+    <!-- Empty -->
+    <div class="state-block empty-block" *ngIf="!loading && !error && bookings.length === 0">
+      <div class="empty-icon">🎫</div>
+      <p class="empty-title">У вас пока нет бронирований</p>
+      <p class="empty-sub">Найдите рейс и забронируйте билет</p>
+      <a class="btn-search-lg" routerLink="/search">Найти рейс</a>
+    </div>
+
+    <!-- Cancel error -->
+    <div class="cancel-error" *ngIf="cancelError">⚠ {{ cancelError }}</div>
+
+    <!-- Bookings list -->
+    <div class="bookings-list" *ngIf="!loading && !error && bookings.length > 0">
+      <div class="booking-card" *ngFor="let b of bookings" [class]="'status-' + b.status">
+
+        <!-- Card top: ref + status -->
+        <div class="card-top">
+          <span class="booking-ref">{{ b.booking_reference }}</span>
+          <span class="status-badge" [class]="'badge-' + b.status">
+            {{ STATUS_LABEL[b.status] }}
+          </span>
+        </div>
+
+        <!-- Flight info -->
+        <div class="flight-row">
+          <div class="airport">
+            <span class="iata">{{ b.flight.origin.iata_code }}</span>
+            <span class="city">{{ b.flight.origin.city }}</span>
+          </div>
+
+          <div class="flight-meta">
+            <span class="dep-time">{{ formatTime(b.flight.departure_time) }}</span>
+            <div class="route-line">
+              <span class="stops-badge" *ngIf="b.flight.stops === 0">Прямой</span>
+              <span class="stops-badge stops" *ngIf="b.flight.stops > 0">{{ b.flight.stops }} пересадка</span>
+              <div class="line">
+                <div class="dot"></div>
+                <div class="dash"></div>
+                <span class="plane">✈</span>
+                <div class="dash"></div>
+                <div class="dot"></div>
+              </div>
+              <span class="duration">{{ formatDuration(b.flight.duration_minutes) }}</span>
+            </div>
+            <span class="arr-time">{{ formatTime(b.flight.arrival_time) }}</span>
+          </div>
+
+          <div class="airport">
+            <span class="iata">{{ b.flight.destination.iata_code }}</span>
+            <span class="city">{{ b.flight.destination.city }}</span>
+          </div>
+        </div>
+
+        <!-- Details row -->
+        <div class="details-row">
+          <span class="detail-chip">✈ {{ b.flight.airline.name }}</span>
+          <span class="detail-chip">📅 {{ formatDate(b.flight.departure_time) }}</span>
+          <span class="detail-chip">💺 {{ b.seat_numbers.join(', ') }}</span>
+          <span class="detail-chip cabin">{{ b.cabin_class === 'economy' ? 'Эконом' : b.cabin_class === 'business' ? 'Бизнес' : 'Первый' }}</span>
+        </div>
+
+        <!-- Extras -->
+        <div class="extras-row" *ngIf="b.extras.length > 0">
+          <span class="extra-chip" *ngFor="let e of b.extras">{{ e.name }}</span>
+        </div>
+
+        <!-- Card footer: price + actions -->
+        <div class="card-footer">
+          <div class="price">
+            <span class="price-label">Итого</span>
+            <span class="price-amount">{{ b.total_price.toLocaleString('ru-RU') }} ₸</span>
+          </div>
+
+          <div class="actions">
+            <a class="btn-ticket" *ngIf="b.pdf_ticket_url" [href]="b.pdf_ticket_url" target="_blank">
+              📄 Билет PDF
+            </a>
+            <button
+              class="btn-cancel"
+              *ngIf="canCancel(b)"
+              (click)="cancel(b)"
+              [disabled]="cancellingId === b.id"
+            >
+              <span *ngIf="cancellingId !== b.id">Отменить</span>
+              <span *ngIf="cancellingId === b.id" class="spinner"></span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

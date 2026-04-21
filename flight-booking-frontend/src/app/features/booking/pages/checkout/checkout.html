@@ -1,1 +1,195 @@
-<p>checkout works!</p>
+<div class="checkout-page page-content">
+  <div class="container">
+
+    <!-- ── Progress ─────────────────────────────────────────── -->
+    <div class="progress-bar" *ngIf="step !== 'success'">
+      <div class="progress-step" [class.done]="step !== 'passenger'" [class.active]="step === 'passenger'">
+        <div class="step-num">1</div>
+        <span>Пассажир</span>
+      </div>
+      <div class="progress-line" [class.done]="step === 'payment'"></div>
+      <div class="progress-step" [class.active]="step === 'payment'">
+        <div class="step-num">2</div>
+        <span>Оплата</span>
+      </div>
+    </div>
+
+    <div class="checkout-layout" *ngIf="step !== 'success'">
+
+      <!-- ── LEFT: forms ─────────────────────────────────────── -->
+      <div class="checkout-main">
+
+        <!-- Step 1: Passenger -->
+        <div class="form-card" *ngIf="step === 'passenger'">
+          <h2 class="card-title">👤 Данные пассажира</h2>
+
+          <form [formGroup]="passengerForm" (ngSubmit)="submitPassenger()" novalidate>
+            <div class="field-row">
+              <div class="field" [class.invalid]="err(passengerForm,'first_name','required')">
+                <label>Имя</label>
+                <input formControlName="first_name" type="text" placeholder="Александр">
+                <span class="field-error" *ngIf="err(passengerForm,'first_name','required')">Обязательное поле</span>
+              </div>
+              <div class="field" [class.invalid]="err(passengerForm,'last_name','required')">
+                <label>Фамилия</label>
+                <input formControlName="last_name" type="text" placeholder="Смирнов">
+                <span class="field-error" *ngIf="err(passengerForm,'last_name','required')">Обязательное поле</span>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field" [class.invalid]="err(passengerForm,'date_of_birth','required')">
+                <label>Дата рождения</label>
+                <input formControlName="date_of_birth" type="date">
+                <span class="field-error" *ngIf="err(passengerForm,'date_of_birth','required')">Обязательное поле</span>
+              </div>
+              <div class="field" [class.invalid]="err(passengerForm,'nationality','required')">
+                <label>Гражданство</label>
+                <input formControlName="nationality" type="text" placeholder="KZ">
+                <span class="field-error" *ngIf="err(passengerForm,'nationality','required')">Обязательное поле</span>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field" [class.invalid]="err(passengerForm,'passport_number','required') || err(passengerForm,'passport_number','pattern')">
+                <label>Номер паспорта</label>
+                <input formControlName="passport_number" type="text" placeholder="AB1234567">
+                <span class="field-error" *ngIf="err(passengerForm,'passport_number','required')">Обязательное поле</span>
+                <span class="field-error" *ngIf="err(passengerForm,'passport_number','pattern')">Формат: AB1234567</span>
+              </div>
+              <div class="field" [class.invalid]="err(passengerForm,'passport_expiry','required')">
+                <label>Срок действия</label>
+                <input formControlName="passport_expiry" type="date">
+                <span class="field-error" *ngIf="err(passengerForm,'passport_expiry','required')">Обязательное поле</span>
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field" [class.invalid]="err(passengerForm,'email','required') || err(passengerForm,'email','email')">
+                <label>Email</label>
+                <input formControlName="email" type="email" placeholder="you@example.com">
+                <span class="field-error" *ngIf="err(passengerForm,'email','required')">Обязательное поле</span>
+                <span class="field-error" *ngIf="err(passengerForm,'email','email')">Некорректный email</span>
+              </div>
+              <div class="field">
+                <label>Телефон <span class="optional">(необязательно)</span></label>
+                <input formControlName="phone" type="tel" placeholder="+7 777 000 00 00">
+              </div>
+            </div>
+
+            <button class="btn-next" type="submit">Перейти к оплате →</button>
+          </form>
+        </div>
+
+        <!-- Step 2: Payment -->
+        <div class="form-card" *ngIf="step === 'payment'">
+          <h2 class="card-title">💳 Оплата</h2>
+
+          <div class="payment-error" *ngIf="error">⚠ {{ error }}</div>
+
+          <!-- Card preview -->
+          <div class="card-preview">
+            <div class="card-chip">💳</div>
+            <div class="card-number-preview">
+              {{ paymentForm.get('card_number')?.value || '•••• •••• •••• ••••' }}
+            </div>
+            <div class="card-bottom">
+              <span>{{ paymentForm.get('cardholder_name')?.value || 'CARDHOLDER NAME' }}</span>
+              <span>{{ paymentForm.get('card_expiry')?.value || 'MM/YY' }}</span>
+            </div>
+          </div>
+
+          <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()" novalidate>
+            <div class="field" [class.invalid]="err(paymentForm,'cardholder_name','required')">
+              <label>Имя держателя карты</label>
+              <input formControlName="cardholder_name" type="text" placeholder="ALEXANDER SMIRNOV" style="text-transform:uppercase">
+              <span class="field-error" *ngIf="err(paymentForm,'cardholder_name','required')">Обязательное поле</span>
+            </div>
+
+            <div class="field" [class.invalid]="err(paymentForm,'card_number','required') || err(paymentForm,'card_number','pattern')">
+              <label>Номер карты</label>
+              <input formControlName="card_number" type="text" placeholder="0000 0000 0000 0000" maxlength="19" (input)="formatCard($event)">
+              <span class="field-error" *ngIf="err(paymentForm,'card_number','required')">Введите номер карты</span>
+              <span class="field-error" *ngIf="err(paymentForm,'card_number','pattern')">Введите 16 цифр</span>
+            </div>
+
+            <div class="field-row">
+              <div class="field" [class.invalid]="err(paymentForm,'card_expiry','required') || err(paymentForm,'card_expiry','pattern')">
+                <label>Срок действия</label>
+                <input formControlName="card_expiry" type="text" placeholder="MM/YY" maxlength="5" (input)="formatExpiry($event)">
+                <span class="field-error" *ngIf="err(paymentForm,'card_expiry','pattern')">Формат: MM/YY</span>
+              </div>
+              <div class="field" [class.invalid]="err(paymentForm,'card_cvv','required') || err(paymentForm,'card_cvv','pattern')">
+                <label>CVV</label>
+                <input formControlName="card_cvv" type="password" placeholder="•••" maxlength="4">
+                <span class="field-error" *ngIf="err(paymentForm,'card_cvv','pattern')">3–4 цифры</span>
+              </div>
+            </div>
+
+            <div class="secure-note">
+              🔒 Платёж защищён SSL-шифрованием. Данные карты не сохраняются.
+            </div>
+
+            <div class="payment-actions">
+              <button class="btn-back" type="button" (click)="step = 'passenger'">← Назад</button>
+              <button class="btn-pay" type="submit" [disabled]="submitting">
+                <span *ngIf="!submitting">Оплатить {{ orderTotal.toLocaleString('ru-RU') }} ₸</span>
+                <span *ngIf="submitting" class="spinner"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- ── RIGHT: order summary ─────────────────────────────── -->
+      <div class="order-summary">
+        <h3 class="summary-title">Ваш заказ</h3>
+
+        <div class="summary-flight">
+          <div class="summary-route">
+            <span class="iata">{{ flightSummary.from }}</span>
+            <span class="arrow">→</span>
+            <span class="iata">{{ flightSummary.to }}</span>
+          </div>
+          <div class="summary-meta">{{ flightSummary.flight }} · {{ flightSummary.date }}</div>
+        </div>
+
+        <div class="summary-lines">
+          <div class="summary-line">
+            <span>Билет</span>
+            <span>{{ flightSummary.price.toLocaleString('ru-RU') }} ₸</span>
+          </div>
+          <div class="summary-line" *ngIf="extrasTotal > 0">
+            <span>Доп. услуги</span>
+            <span>{{ extrasTotal.toLocaleString('ru-RU') }} ₸</span>
+          </div>
+        </div>
+
+        <div class="summary-total">
+          <span>Итого</span>
+          <span class="total-amount">{{ orderTotal.toLocaleString('ru-RU') }} ₸</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Success screen ──────────────────────────────────────── -->
+    <div class="success-screen" *ngIf="step === 'success'">
+      <div class="success-icon">✅</div>
+      <h1 class="success-title">Оплата прошла успешно!</h1>
+      <p class="success-sub">Билет отправлен на ваш email</p>
+
+      <div class="success-ref" *ngIf="paymentResult">
+        <span class="ref-label">Номер бронирования</span>
+        <span class="ref-code">{{ paymentResult.booking_reference }}</span>
+      </div>
+
+      <div class="success-actions">
+        <button class="btn-bookings" (click)="goBookings()">Мои билеты</button>
+        <button class="btn-home"     (click)="goHome()">На главную</button>
+      </div>
+    </div>
+
+  </div>
+</div>

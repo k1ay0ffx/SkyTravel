@@ -1,1 +1,55 @@
-<p>flight-card works!</p>
+<div class="flight-card" [class.selected]="isSelected" (click)="selectFlight()">
+
+  <div class="card-main">
+    <div class="airline-col">
+      <div class="airline-logo">{{ flight.airline.iata_code }}</div>
+      <div class="airline-info">
+        <div class="airline-name">{{ flight.airline.name }}</div>
+        <div class="flight-num">{{ flight.flight_number }}</div>
+      </div>
+    </div>
+
+    <div class="route-col">
+      <div class="time-block">
+        <div class="time">{{ flight.departure_time | date:'HH:mm' }}</div>
+        <div class="airport">{{ flight.origin.iata_code }}</div>
+        <div class="city-name">{{ flight.origin.city }}</div>
+      </div>
+
+      <div class="duration-col">
+        <div class="duration">{{ flight.duration_minutes }} мин.</div>
+        <div class="line-wrap">
+          <div class="line"></div>
+          <div class="plane-dot">✈</div>
+        </div>
+        <div class="stops">
+          <span *ngIf="flight.stops === 0" class="direct">Прямой</span>
+          <span *ngIf="flight.stops === 1" class="one-stop">1 пересадка</span>
+          <span *ngIf="flight.stops > 1" class="multi-stop">{{ flight.stops }} пересадки</span>
+        </div>
+      </div>
+
+      <div class="time-block right">
+        <div class="time">{{ flight.arrival_time | date:'HH:mm' }}</div>
+        <div class="airport">{{ flight.destination.iata_code }}</div>
+        <div class="city-name">{{ flight.destination.city }}</div>
+      </div>
+    </div>
+
+    <div class="price-col">
+      <div class="price">{{ flight.price_economy | number }} <span>₸</span></div>
+      <div class="per-person">за 1 пассажира</div>
+      <button class="btn-select" (click)="selectFlight(); $event.stopPropagation()">
+        {{ isSelected ? '✓ Выбран' : 'Выбрать' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="card-tags">
+    <span class="tag" *ngIf="flight.aircraft_model">✈ {{ flight.aircraft_model }}</span>
+    <div class="tag-spacer"></div>
+    <button class="details-btn" (click)="toggleDetails(); $event.stopPropagation()">
+      {{ showDetails ? 'Скрыть детали ▲' : 'Детали рейса ▼' }}
+    </button>
+  </div>
+</div>

@@ -1,1 +1,194 @@
-<p>flight-details works!</p>
+<div class="details-page" *ngIf="flight">
+
+  <div class="details-header">
+    <button class="back-btn" (click)="goBack()">← Назад к рейсам</button>
+    <div class="dh-airline">
+      <div class="dh-logo">{{ flight.airline.iata_code }}</div>
+      <div>
+        <div class="dh-name">{{ flight.airline.name }}</div>
+        <div class="dh-num">Рейс {{ flight.flight_number }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ROUTE HERO ── -->
+  <div class="route-hero">
+    <div class="rh-city">
+      <div class="rh-code">{{ flight.origin.iata_code }}</div>
+      <div class="rh-name">{{ flight.origin.city }}</div>
+      <div class="rh-airport">{{ flight.origin.name }}</div>
+      <div class="rh-time">{{ flight.departure_time | date:'HH:mm' }}</div>
+      <div class="rh-date">{{ flight.departure_time | date:'d MMMM yyyy' }}</div>
+    </div>
+
+    <div class="rh-middle">
+      <div class="rh-dur">{{ formatDuration(flight.duration_minutes) }}</div>
+      <div class="rh-line">
+        <div class="rh-dot"></div>
+        <div class="rh-dash"></div>
+        <div class="rh-plane">✈</div>
+        <div class="rh-dash"></div>
+        <div class="rh-dot"></div>
+      </div>
+      <div class="rh-stops" [class.direct]="flight.stops === 0">
+        {{ flight.stops === 0 ? 'Прямой рейс' : flight.stops + ' пересадка' }}
+      </div>
+    </div>
+
+    <div class="rh-city right">
+      <div class="rh-code">{{ flight.destination.iata_code }}</div>
+      <div class="rh-name">{{ flight.destination.city }}</div>
+      <div class="rh-airport">{{ flight.destination.name }}</div>
+      <div class="rh-time">{{ flight.arrival_time | date:'HH:mm' }}</div>
+      <div class="rh-date">{{ flight.arrival_time | date:'d MMMM yyyy' }}</div>
+    </div>
+  </div>
+
+  <div class="details-layout">
+
+    <!-- ── LEFT: INFO ── -->
+    <div class="details-main">
+
+      <!-- Flight info grid -->
+      <div class="info-card">
+        <h2>Информация о рейсе</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="il">Самолёт</span>
+            <span>{{ flight.aircraft_model }}</span>
+          </div>
+          <div class="info-item">
+            <span class="il">Длительность</span>
+            <span>{{ formatDuration(flight.duration_minutes) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="il">Пересадки</span>
+            <span>{{ flight.stops === 0 ? 'Без пересадок' : flight.stops }}</span>
+          </div>
+          <div class="info-item">
+            <span class="il">Терминал вылета</span>
+            <span>Терминал A</span>
+          </div>
+          <div class="info-item">
+            <span class="il">Страна вылета</span>
+            <span>{{ flight.origin.country }}</span>
+          </div>
+          <div class="info-item">
+            <span class="il">Страна прилёта</span>
+            <span>{{ flight.destination.country }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cabin options -->
+      <div class="info-card">
+        <h2>Выберите класс</h2>
+        <div class="cabin-cards">
+          <div class="cabin-card"
+               [class.active]="selectedCabin === 'economy'"
+               (click)="selectedCabin = 'economy'">
+            <div class="cc-top">
+              <div class="cc-name">Эконом</div>
+              <div class="cc-check" *ngIf="selectedCabin==='economy'">✓</div>
+            </div>
+            <div class="cc-price">{{ flight.price_economy | number }} ₸</div>
+            <ul class="cc-features">
+              <li>✓ Ручная кладь 7 кг</li>
+              <li>✗ Багаж не включён</li>
+              <li>✗ Выбор места платный</li>
+            </ul>
+            <div class="cc-seats">{{ flight.available_seats_economy }} мест</div>
+          </div>
+
+          <div class="cabin-card" *ngIf="flight.price_business > 0"
+               [class.active]="selectedCabin === 'business'"
+               (click)="selectedCabin = 'business'">
+            <div class="cc-top">
+              <div class="cc-name">Бизнес <span class="cc-badge">⭐</span></div>
+              <div class="cc-check" *ngIf="selectedCabin==='business'">✓</div>
+            </div>
+            <div class="cc-price">{{ flight.price_business | number }} ₸</div>
+            <ul class="cc-features">
+              <li>✓ Багаж 30 кг включён</li>
+              <li>✓ Приоритетная посадка</li>
+              <li>✓ Выбор места бесплатно</li>
+              <li>✓ Питание на борту</li>
+            </ul>
+            <div class="cc-seats">{{ flight.available_seats_business }} мест</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Baggage info -->
+      <div class="info-card">
+        <h2>Условия багажа</h2>
+        <div class="baggage-grid">
+          <div class="bag-item">
+            <div class="bag-icon">👜</div>
+            <div class="bag-info">
+              <div class="bag-name">Ручная кладь</div>
+              <div class="bag-desc">7 кг, 55×40×20 см — бесплатно</div>
+            </div>
+          </div>
+          <div class="bag-item">
+            <div class="bag-icon">🧳</div>
+            <div class="bag-info">
+              <div class="bag-name">Багаж 20 кг</div>
+              <div class="bag-desc">Доплата 3 500 ₸</div>
+            </div>
+          </div>
+          <div class="bag-item">
+            <div class="bag-icon">🧳</div>
+            <div class="bag-info">
+              <div class="bag-name">Багаж 23 кг</div>
+              <div class="bag-desc">Доплата 5 000 ₸</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT: BOOKING ── -->
+    <div class="details-side">
+      <div class="booking-card">
+        <div class="bc-price">
+          {{ (selectedCabin === 'economy' ? flight.price_economy : flight.price_business) | number }}
+          <span>₸</span>
+        </div>
+        <div class="bc-per">за 1 пассажира · {{ selectedCabin === 'economy' ? 'Эконом' : 'Бизнес' }}</div>
+
+        <div class="bc-row">
+          <span>Пассажиры</span>
+          <div class="bc-counter">
+           <button (click)="decreasePassengers()">−</button>
+            <span>{{ passengers }}</span>
+           <button (click)="increasePassengers()">+</button>
+          </div>
+        </div>
+
+        <div class="bc-total">
+          <span>Итого</span>
+          <span class="bc-total-price">
+            {{ (selectedCabin === 'economy' ? flight.price_economy : flight.price_business) * passengers | number }} ₸
+          </span>
+        </div>
+
+        <button class="btn-book" (click)="bookFlight()">
+          Выбрать и продолжить →
+        </button>
+
+        <div class="bc-note">
+          <span>🔒 Безопасная оплата</span>
+          <span>↩ Возврат по условиям</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="page-loading" *ngIf="!flight && isLoading">
+  <div class="spinner-big"></div>
+</div>

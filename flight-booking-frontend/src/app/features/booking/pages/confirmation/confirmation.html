@@ -1,1 +1,38 @@
-<p>confirmation works!</p>
+<div class="confirm-page">
+  <div class="confirm-card">
+    <div class="success-icon">✈</div>
+    <h1>Бронирование подтверждено!</h1>
+    <p>Ваш билет отправлен на почту <strong>{{ email }}</strong></p>
+
+    <div class="ref-box">
+      <span class="ref-label">Номер бронирования</span>
+      <span class="ref-num">{{ bookingRef }}</span>
+      <button class="copy-btn" (click)="copyRef()" title="Скопировать">📋</button>
+    </div>
+
+    <div class="details-grid">
+      <div class="detail-item">
+        <span class="dl">Маршрут</span>
+        <span>{{ fromCode }} → {{ toCode }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="dl">Дата вылета</span>
+        <span>{{ depTime }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="dl">Рейс</span>
+        <span>{{ flightNum }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="dl">Место</span>
+        <span>{{ seats }}</span>
+      </div>
+    </div>
+
+    <div class="confirm-actions">
+      <button class="btn-primary" (click)="downloadTicket()">⬇ Скачать билет</button>
+      <button class="btn-outline" routerLink="/bookings">Мои поездки</button>
+      <button class="btn-ghost" routerLink="/">На главную</button>
+    </div>
+  </div>
+</div>

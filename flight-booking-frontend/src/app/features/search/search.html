@@ -1,1 +1,146 @@
-<p>search works!</p>
+<div class="search-page">
+
+  <!-- ── SEARCH BAR (compact) ── -->
+  <div class="search-bar-compact">
+    <div class="search-bar-inner">
+      <div class="compact-field">
+        <span class="label">Откуда</span>
+        <span class="val">{{ fromCity }}</span>
+      </div>
+      <div class="compact-arrow">✈</div>
+      <div class="compact-field">
+        <span class="label">Куда</span>
+        <span class="val">{{ toCity }}</span>
+      </div>
+      <div class="compact-sep"></div>
+      <div class="compact-field">
+        <span class="label">Дата</span>
+        <span class="val">{{ dateRange }}</span>
+      </div>
+      <div class="compact-field">
+        <span class="label">Пассажиры</span>
+        <span class="val">{{ passengers }}</span>
+      </div>
+      <button class="btn-search-again" routerLink="/">✏ Изменить</button>
+    </div>
+  </div>
+
+  <div class="content-layout">
+
+    <!-- ── FILTERS SIDEBAR ── -->
+    <aside class="filters-panel">
+      <div class="filters-header">
+        <h3>Фильтры</h3>
+        <button class="reset-btn" (click)="resetFilters()">Сбросить</button>
+      </div>
+
+      <!-- Price range -->
+      <div class="filter-group">
+        <h4>Цена</h4>
+        <div class="price-inputs">
+          <input type="number" [(ngModel)]="priceMin" placeholder="От" class="price-input">
+          <span>—</span>
+          <input type="number" [(ngModel)]="priceMax" placeholder="До" class="price-input">
+        </div>
+        <input type="range" [min]="0" [max]="300000" [(ngModel)]="priceMax" class="range-slider">
+        <div class="range-label">до {{ priceMax | number }} ₸</div>
+      </div>
+
+      <!-- Stops -->
+      <div class="filter-group">
+        <h4>Пересадки</h4>
+        <label class="check-item" *ngFor="let s of stopOptions">
+          <input type="checkbox" [(ngModel)]="s.checked">
+          <span class="checkmark"></span>
+          <span class="check-label">{{ s.label }}</span>
+          <span class="check-count">{{ s.count }}</span>
+        </label>
+      </div>
+
+      <!-- Airlines -->
+      <div class="filter-group">
+        <h4>Авиакомпании</h4>
+        <label class="check-item" *ngFor="let a of airlineOptions">
+          <input type="checkbox" [(ngModel)]="a.checked">
+          <span class="checkmark"></span>
+          <span class="check-label">{{ a.name }}</span>
+          <span class="check-count">от {{ a.minPrice | number }} ₸</span>
+        </label>
+      </div>
+
+      <!-- Departure time -->
+      <div class="filter-group">
+        <h4>Время вылета</h4>
+        <div class="time-chips">
+          <button class="time-chip" [class.active]="timeFilter==='morning'" (click)="timeFilter='morning'">🌅 Утро</button>
+          <button class="time-chip" [class.active]="timeFilter==='day'" (click)="timeFilter='day'">☀ День</button>
+          <button class="time-chip" [class.active]="timeFilter==='evening'" (click)="timeFilter='evening'">🌙 Вечер</button>
+          <button class="time-chip" [class.active]="timeFilter==='night'" (click)="timeFilter='night'">🌃 Ночь</button>
+        </div>
+      </div>
+
+      <!-- Baggage -->
+      <div class="filter-group">
+        <h4>Багаж</h4>
+        <label class="check-item">
+          <input type="checkbox" [(ngModel)]="withBaggage">
+          <span class="checkmark"></span>
+          <span class="check-label">С чемоданом</span>
+        </label>
+        <label class="check-item">
+          <input type="checkbox" [(ngModel)]="refundableOnly">
+          <span class="checkmark"></span>
+          <span class="check-label">Возврат возможен</span>
+        </label>
+      </div>
+    </aside>
+
+    <!-- ── RESULTS ── -->
+    <main class="results-area">
+
+      <!-- Sort & count -->
+      <div class="results-header">
+        <div class="results-count">
+          Найдено <strong>{{ filteredFlights.length }}</strong> рейсов
+        </div>
+        <div class="sort-row">
+          <span class="sort-label">Сортировка:</span>
+          <button class="sort-btn" [class.active]="sortBy==='price'" (click)="sortBy='price'">По цене</button>
+          <button class="sort-btn" [class.active]="sortBy==='duration'" (click)="sortBy='duration'">По времени</button>
+          <button class="sort-btn" [class.active]="sortBy==='departure'" (click)="sortBy='departure'">По вылету</button>
+        </div>
+      </div>
+
+      <!-- Price calendar strip -->
+      <div class="price-calendar">
+        <div class="cal-day" *ngFor="let day of calendarDays" [class.active]="day.active" (click)="selectDay(day)">
+          <div class="cal-date">{{ day.label }}</div>
+          <div class="cal-price">{{ day.price | number }}</div>
+        </div>
+      </div>
+
+      <!-- Loading skeleton -->
+      <ng-container *ngIf="isLoading">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+      </ng-container>
+
+      <!-- Flight cards -->
+      <ng-container *ngIf="!isLoading">
+        <app-flight-card
+          *ngFor="let flight of filteredFlights"
+          [flight]="flight"
+          [isSelected]="selectedFlightId === flight.id"
+          (selected)="onFlightSelected($event)">
+        </app-flight-card>
+
+        <div class="no-results" *ngIf="filteredFlights.length === 0">
+          <div class="no-results-icon">✈</div>
+          <h3>Рейсы не найдены</h3>
+          <p>Попробуйте изменить фильтры или выбрать другие даты</p>
+          <button class="btn-big" (click)="resetFilters()">Сбросить фильтры</button>
+        </div>
+      </ng-container>
+
+    </main>
+  </div>
+</div>

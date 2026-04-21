@@ -1,1 +1,52 @@
-<p>header works!</p>
+<nav class="sky-nav" [class.scrolled]="isScrolled">
+  <div class="nav-container">
+
+    <a routerLink="/" class="nav-logo">
+      <div class="logo-icon">✈</div>
+      Sky<span>Travel</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a routerLink="/flights" routerLinkActive="active">Авиабилеты</a></li>
+      <li><a routerLink="/search" routerLinkActive="active">Поиск</a></li>
+      <li><a routerLink="/bookings" routerLinkActive="active">Мои билеты</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <select class="currency-select" [(ngModel)]="selectedCurrency">
+        <option value="KZT">🇰🇿 KZT</option>
+        <option value="RUB">🇷🇺 RUB</option>
+        <option value="USD">🇺🇸 USD</option>
+      </select>
+
+      <ng-container *ngIf="!isLoggedIn; else loggedInTpl">
+        <button class="btn-ghost" routerLink="/auth/login">Войти</button>
+        <button class="btn-primary" routerLink="/auth/register">Регистрация</button>
+      </ng-container>
+
+      <ng-template #loggedInTpl>
+        <div class="user-menu" (click)="toggleUserMenu()">
+          <div class="avatar">{{ userInitials }}</div>
+          <div class="dropdown" *ngIf="menuOpen">
+            <a routerLink="/profile">Профиль</a>
+            <a routerLink="/bookings">Мои поездки</a>
+            <hr>
+            <a (click)="logout()">Выйти</a>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+    <button class="burger" (click)="toggleMobile()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" [class.open]="mobileOpen">
+    <a routerLink="/flights" (click)="closeMobile()">Авиабилеты</a>
+    <a routerLink="/search" (click)="closeMobile()">Поиск</a>
+    <a routerLink="/bookings" (click)="closeMobile()">Мои билеты</a>
+    <a routerLink="/auth/login" (click)="closeMobile()">Войти</a>
+  </div>
+</nav>

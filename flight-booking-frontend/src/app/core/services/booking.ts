@@ -8,6 +8,7 @@ import {
   PaymentRequest, PaymentResponse, CancelBookingResponse
 } from '../models/booking.model';
 // import { BookingStateService } from './booking-state';
+import { Extra, ExtraType } from '../models/extras.model';
 
 const MOCK_BOOKINGS: Booking[] = [
   {

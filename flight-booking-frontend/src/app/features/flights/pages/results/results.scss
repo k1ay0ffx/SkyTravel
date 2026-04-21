@@ -1,0 +1,316 @@
+:host { display: block; font-family: 'DM Sans', sans-serif; color: #fff; }
+
+/* ─── COMPACT SEARCH BAR ─── */
+.search-bar-compact {
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.09);
+  padding: 14px 32px;
+  position: sticky; top: 68px; z-index: 50;
+}
+
+.sbc-inner {
+  max-width: 1280px; margin: 0 auto;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+
+.sbc-field {
+  display: flex; flex-direction: column; cursor: pointer;
+  .sbc-label { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 2px; }
+  .sbc-val   { font-size: 14px; font-weight: 500; }
+  &:hover .sbc-val { color: #FF8F5E; }
+}
+
+.sbc-swap { font-size: 16px; color: #FF6B2B; }
+.sbc-sep  { width: 1px; height: 32px; background: rgba(255,255,255,0.1); }
+
+.sbc-edit {
+  margin-left: auto;
+  background: #FF6B2B; border: none; color: #fff;
+  padding: 8px 18px; border-radius: 9px; font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background .2s; white-space: nowrap;
+  &:hover { background: #FF8F5E; }
+}
+
+/* ─── LAYOUT ─── */
+.results-layout {
+  max-width: 1280px; margin: 0 auto;
+  padding: 28px 32px;
+  display: grid; grid-template-columns: 260px 1fr; gap: 28px; align-items: start;
+}
+
+/* ─── FILTERS PANEL ─── */
+.filters-panel {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 20px; padding: 22px;
+  position: sticky; top: 130px;
+}
+
+.fp-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px;
+  h3 { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700; }
+}
+
+.fp-reset {
+  background: none; border: none; color: #FF8F5E; font-size: 13px;
+  cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 0; transition: opacity .2s;
+  &:hover { opacity: .75; }
+}
+
+.filter-group {
+  padding-bottom: 20px; margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  &:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  h4 { font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .9px; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+}
+
+.price-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.price-dash { color: rgba(255,255,255,0.3); }
+.price-input {
+  flex: 1; width: 0;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 13px;
+  font-family: 'DM Sans', sans-serif; outline: none;
+  &::placeholder { color: rgba(255,255,255,0.2); }
+  &:focus { border-color: rgba(255,255,255,0.25); }
+}
+
+input[type=range] {
+  width: 100%; accent-color: #FF6B2B; margin-bottom: 6px;
+}
+.range-hint { font-size: 12px; color: rgba(255,255,255,0.35); text-align: right; }
+
+/* checkboxes */
+.check-item {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 10px; cursor: pointer; font-size: 14px;
+  input[type=checkbox] { display: none; }
+
+  .checkmark {
+    width: 17px; height: 17px; border-radius: 5px;
+    border: 1.5px solid rgba(255,255,255,0.18); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; transition: all .15s;
+  }
+  input:checked ~ .checkmark {
+    background: #FF6B2B; border-color: #FF6B2B;
+    &::after { content: '✓'; font-size: 10px; color: #fff; font-weight: 700; }
+  }
+  .check-label { flex: 1; color: rgba(255,255,255,0.7); }
+  .check-count { font-size: 12px; color: rgba(255,255,255,0.3); }
+}
+
+/* time chips */
+.time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.time-chip {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.55); padding: 8px 6px; border-radius: 9px;
+  font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; text-align: center;
+  transition: all .2s;
+  &:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  &.active { background: rgba(255,107,43,0.1); border-color: rgba(255,107,43,0.35); color: #FF8F5E; }
+}
+
+/* ─── RESULTS MAIN ─── */
+.results-main { display: flex; flex-direction: column; gap: 12px; }
+
+.results-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  .results-count { font-size: 15px; color: rgba(255,255,255,0.55); strong { color: #fff; } }
+  .loading-text  { color: rgba(255,255,255,0.4); font-style: italic; }
+}
+
+.sort-row {
+  display: flex; align-items: center; gap: 6px;
+  .sort-label { font-size: 13px; color: rgba(255,255,255,0.35); }
+}
+
+.sort-btn {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.5); padding: 6px 14px; border-radius: 8px;
+  font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all .2s;
+  &:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  &.active { background: rgba(255,107,43,0.1); border-color: rgba(255,107,43,0.3); color: #FF8F5E; }
+}
+
+/* ─── PRICE CALENDAR ─── */
+.price-calendar {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 12px 16px;
+}
+
+.cal-arrow {
+  background: none; border: none; color: rgba(255,255,255,0.4); font-size: 20px;
+  cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all .2s; flex-shrink: 0;
+  &:hover { background: rgba(255,255,255,0.07); color: #fff; }
+}
+
+.cal-days {
+  display: flex; gap: 6px; flex: 1; overflow-x: auto;
+  scrollbar-width: none; &::-webkit-scrollbar { display: none; }
+}
+
+.cal-day {
+  flex-shrink: 0; min-width: 64px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 8px 10px; text-align: center; cursor: pointer; transition: all .2s;
+  &:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.07); }
+  &.active { background: rgba(255,107,43,0.1); border-color: rgba(255,107,43,0.4); }
+  &.cheapest .cal-price { color: #4ade80; }
+  .cal-label { font-size: 11px; color: rgba(255,255,255,0.45); margin-bottom: 4px; }
+  .cal-price { font-size: 12px; font-weight: 600; color: #F5C842; }
+  &.active .cal-price { color: #FF8F5E; }
+}
+
+/* ─── CABIN TABS ─── */
+.cabin-tabs { display: flex; gap: 8px; }
+
+.cabin-tab {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.55); padding: 10px 20px; border-radius: 10px;
+  font-size: 14px; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all .2s;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  &:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  &.active { background: rgba(255,107,43,0.1); border-color: rgba(255,107,43,0.35); color: #FF8F5E; }
+  .cabin-price { font-size: 12px; color: #F5C842; font-weight: 600; }
+}
+
+/* ─── FLIGHT CARD ─── */
+.flight-card-wrap {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px; overflow: hidden; transition: all .25s;
+  &:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+  &.highlighted { border-color: rgba(255,107,43,0.45); background: rgba(255,107,43,0.05); }
+}
+
+.fc-main {
+  display: grid; grid-template-columns: 160px 1fr 150px;
+  gap: 20px; align-items: center; padding: 20px 24px; cursor: pointer;
+}
+
+.fc-airline {
+  display: flex; align-items: center; gap: 10px;
+  .fc-logo {
+    width: 42px; height: 42px; background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; letter-spacing: .5px; color: rgba(255,255,255,0.75); flex-shrink: 0;
+  }
+  .fc-airline-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .fc-num          { font-size: 12px; color: rgba(255,255,255,0.35); }
+}
+
+.fc-route {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.fc-time-block {
+  text-align: left; min-width: 60px;
+  &.right { text-align: right; }
+  .fc-time { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700;
+    letter-spacing: -.5px; line-height: 1; margin-bottom: 4px; }
+  .fc-code { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.55); margin-bottom: 2px; }
+  .fc-city { font-size: 12px; color: rgba(255,255,255,0.3); }
+}
+
+.fc-middle {
+  flex: 1; text-align: center;
+  .fc-dur  { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+  .fc-line {
+    display: flex; align-items: center; justify-content: center; gap: 2px; margin-bottom: 6px;
+    .fc-dot  { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); }
+    .fc-dash { flex: 1; height: 1px; background: rgba(255,255,255,0.2); }
+    .fc-plane { font-size: 14px; color: #FF6B2B; }
+  }
+  .fc-stops { font-size: 12px;
+    &.direct   { color: #4ade80; }
+    &.one-stop { color: #fbbf24; }
+    color: #f87171;
+  }
+}
+
+.fc-price-col {
+  text-align: right;
+  .fc-price { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700;
+    color: #F5C842; line-height: 1; margin-bottom: 3px; span { font-size: 17px; } }
+  .fc-per   { font-size: 12px; color: rgba(255,255,255,0.3); margin-bottom: 12px; }
+}
+
+.fc-select-btn {
+  width: 100%; background: #FF6B2B; border: none; color: #fff;
+  padding: 9px 18px; border-radius: 9px; font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all .2s;
+  &:hover { background: #FF8F5E; transform: translateY(-1px); }
+}
+
+/* tags row */
+.fc-tags {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px 24px; border-top: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);
+}
+
+.fc-tag {
+  font-size: 12px; padding: 3px 10px; border-radius: 100px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color: rgba(255,255,255,0.55);
+  &.green { color: #4ade80; background: rgba(74,222,128,0.06); border-color: rgba(74,222,128,0.2); }
+  &.spacer { flex: 1; background: none; border: none; }
+}
+
+.fc-detail-btn {
+  background: none; border: none; color: rgba(255,255,255,0.35); font-size: 12px;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; padding: 3px 6px; border-radius: 5px; transition: all .2s;
+  &:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.05); }
+}
+
+/* expanded */
+.fc-expanded {
+  padding: 16px 24px; background: rgba(255,255,255,0.02);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  animation: slideDown .2s ease;
+}
+
+.exp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.exp-item {
+  display: flex; flex-direction: column; gap: 3px;
+  .exp-l { font-size: 11px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: .6px; }
+  span:last-child { font-size: 14px; font-weight: 500; }
+}
+
+/* skeleton */
+.skeleton-card {
+  height: 110px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px; animation: pulse 1.5s ease infinite;
+}
+
+/* no results */
+.no-results {
+  text-align: center; padding: 80px 32px;
+  .nr-icon { font-size: 48px; opacity: .25; margin-bottom: 16px; }
+  h3 { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  p  { color: rgba(255,255,255,0.45); margin-bottom: 24px; }
+}
+
+.nr-btn {
+  background: #FF6B2B; border: none; color: #fff; padding: 12px 28px;
+  border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; transition: background .2s;
+  &:hover { background: #FF8F5E; }
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:.45} }
+@keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 960px) {
+  .results-layout { grid-template-columns: 1fr; }
+  .filters-panel  { position: static; }
+  .fc-main        { grid-template-columns: 1fr; gap: 16px; }
+  .fc-price-col   { text-align: left; display: flex; align-items: center; gap: 20px; }
+  .fc-select-btn  { width: auto; }
+  .exp-grid       { grid-template-columns: 1fr 1fr; }
+}

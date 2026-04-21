@@ -1,1 +1,183 @@
-<p>checkout works!</p>
+<div class="checkout-page">
+  <div class="progress-bar">
+    <div class="progress-inner">
+      <div class="step done">✓ Рейс</div>
+      <div class="step-line done"></div>
+      <div class="step done">✓ Места</div>
+      <div class="step-line done"></div>
+      <div class="step active">3 Оплата</div>
+    </div>
+  </div>
+
+  <div class="checkout-layout">
+
+    <!-- ── LEFT: FORM ── -->
+    <div class="checkout-form">
+
+      <!-- Passenger info -->
+      <div class="form-section">
+        <h2>Данные пассажира</h2>
+
+        <div class="passenger-block" *ngFor="let p of passengers; let i = index">
+          <div class="pb-header">Пассажир {{ i + 1 }}</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Имя (как в паспорте)</label>
+              <input type="text" [(ngModel)]="p.first_name" placeholder="IVAN">
+            </div>
+            <div class="form-group">
+              <label>Фамилия</label>
+              <input type="text" [(ngModel)]="p.last_name" placeholder="IVANOV">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Дата рождения</label>
+              <input type="date" [(ngModel)]="p.date_of_birth">
+            </div>
+            <div class="form-group">
+              <label>Гражданство</label>
+              <select [(ngModel)]="p.nationality">
+                <option value="KZ">Казахстан</option>
+                <option value="RU">Россия</option>
+                <option value="US">США</option>
+                <option value="OTHER">Другое</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Номер паспорта</label>
+              <input type="text" [(ngModel)]="p.passport_number" placeholder="N1234567">
+            </div>
+            <div class="form-group">
+              <label>Срок действия</label>
+              <input type="date" [(ngModel)]="p.passport_expiry">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact info -->
+      <div class="form-section">
+        <h2>Контактные данные</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email для билета</label>
+            <input type="email" [(ngModel)]="contactEmail" placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label>Телефон</label>
+            <input type="tel" [(ngModel)]="contactPhone" placeholder="+7 777 000 00 00">
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="form-section">
+        <h2>Способ оплаты</h2>
+
+        <div class="payment-tabs">
+          <button class="ptab" [class.active]="payMethod==='card'" (click)="payMethod='card'">
+            💳 Банковская карта
+          </button>
+          <button class="ptab" [class.active]="payMethod==='kaspi'" (click)="payMethod='kaspi'">
+            🟡 Kaspi Pay
+          </button>
+        </div>
+
+        <ng-container *ngIf="payMethod === 'card'">
+          <div class="card-visual">
+            <div class="card-number-display">{{ cardDisplay }}</div>
+            <div class="card-bottom">
+              <div>
+                <div class="card-label">Владелец</div>
+                <div class="card-val">{{ cardHolder || 'ИМЯ ФАМИЛИЯ' }}</div>
+              </div>
+              <div>
+                <div class="card-label">Срок</div>
+                <div class="card-val">{{ cardExpiry || 'MM/YY' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Номер карты</label>
+            <input type="text" [(ngModel)]="cardNumber"
+                   (input)="formatCard()" placeholder="0000 0000 0000 0000" maxlength="19">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Имя на карте</label>
+              <input type="text" [(ngModel)]="cardHolder" placeholder="IVAN IVANOV"
+                     (input)="cardHolder = cardHolder.toUpperCase()">
+            </div>
+            <div class="form-group">
+              <label>Срок / CVV</label>
+              <div style="display:flex;gap:8px">
+                <input type="text" [(ngModel)]="cardExpiry" placeholder="MM/YY" maxlength="5" style="flex:1">
+                <input type="password" [(ngModel)]="cardCvv" placeholder="CVV" maxlength="3" style="width:70px">
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="kaspi-info" *ngIf="payMethod === 'kaspi'">
+          Вы будете перенаправлены в приложение Kaspi для завершения оплаты
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="error-banner" *ngIf="errorMsg">⚠ {{ errorMsg }}</div>
+
+      <button class="btn-pay" [class.loading]="isLoading" [disabled]="isLoading" (click)="pay()">
+        <span *ngIf="!isLoading">Оплатить {{ totalPrice | number }} ₸</span>
+        <span *ngIf="isLoading" class="spinner"></span>
+      </button>
+
+      <p class="secure-note">🔒 Платёж защищён SSL-шифрованием</p>
+    </div>
+
+    <!-- ── RIGHT: ORDER SUMMARY ── -->
+    <div class="order-summary">
+      <h3>Ваш заказ</h3>
+
+      <div class="flight-summary">
+        <div class="fs-badge">Вылет</div>
+        <div class="fs-route">
+          <span class="fs-code">{{ fromCode }}</span>
+          <span class="fs-arrow">✈</span>
+          <span class="fs-code">{{ toCode }}</span>
+        </div>
+        <div class="fs-info">{{ airline }} · {{ flightNumber }}</div>
+        <div class="fs-time">{{ depTime }}</div>
+      </div>
+
+      <div class="seats-summary" *ngIf="seats.length > 0">
+        <div class="ss-label">Выбранные места</div>
+        <div class="ss-seats">
+          <span class="ss-seat" *ngFor="let s of seats">{{ s }}</span>
+        </div>
+      </div>
+
+      <div class="price-list">
+        <div class="pl-row">
+          <span>Билет × {{ passengers.length }}</span>
+          <span>{{ basePrice | number }} ₸</span>
+        </div>
+        <div class="pl-row" *ngIf="seatExtra > 0">
+          <span>Доп. за места</span>
+          <span>+{{ seatExtra | number }} ₸</span>
+        </div>
+        <div class="pl-row" *ngIf="extrasPrice > 0">
+          <span>Дополнительно</span>
+          <span>+{{ extrasPrice | number }} ₸</span>
+        </div>
+        <div class="pl-row total">
+          <span>Итого</span>
+          <span>{{ totalPrice | number }} ₸</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
