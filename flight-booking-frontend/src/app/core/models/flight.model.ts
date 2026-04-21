@@ -16,8 +16,8 @@ export type CabinClass = 'economy' | 'business' | 'first';
 export type TripType = 'one_way' | 'round_trip';
 
 export interface FlightSearchParams {
-  origin: string;       // IATA code
-  destination: string;  // IATA code
+  origin: string;
+  destination: string;
   departure_date: string;
   return_date?: string;
   passengers: number;
@@ -42,4 +42,43 @@ export interface Flight {
   available_seats_business: number;
   available_seats_first: number;
   aircraft_model: string;
+}
+
+// ── API types ──────────────────────────────────────────────
+
+export interface RouteSearchParams {
+  origin: string;        // город: 'Almaty', 'Beijing'
+  destination: string;
+  date: string;          // YYYY-MM-DD
+  max_stops: number;     // 0–3
+  prefer_price: boolean; // true = дешевле, false = быстрее
+}
+
+export interface FlightSegment {
+  segment_number: number;
+  database_flight_id: number;
+  origin_city: string;
+  destination_city: string;
+  departure_time: string;   // 'YYYY-MM-DD HH:mm'
+  arrival_time: string;
+  price_tenge: number;
+  airplane_model: string;
+  layover_time_hours?: number;
+}
+
+export interface FlightRoute {
+  route_type: string;            // '1 пересадка', 'Прямой'
+  total_price: number;
+  total_duration_hours: number;
+  departure_datetime: string;
+  arrival_datetime: string;
+  flights_from_db: FlightSegment[];
+}
+
+export interface RouteSearchResponse {
+  success: boolean;
+  routes_found: number;
+  direct_flights: number;
+  with_connections: number;
+  routes: FlightRoute[];
 }

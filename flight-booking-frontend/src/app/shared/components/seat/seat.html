@@ -143,14 +143,14 @@
       </div>
 
       <button class="btn-continue"
-              [disabled]="selectedSeats.length === 0"
-              (click)="goToCheckout()">
+        [disabled]="selectedSeats.length === 0"
+        (click)="goToCheckout(false)">
         Продолжить →
       </button>
 
-      <button class="btn-skip" (click)="goToCheckout()">
-        Пропустить выбор мест
-      </button>
+        <button class="btn-skip" (click)="goToCheckout(true)">
+          Пропустить выбор мест
+        </button>
 
     </div>
   </div>

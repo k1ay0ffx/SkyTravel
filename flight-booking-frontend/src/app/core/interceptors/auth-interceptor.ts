@@ -9,7 +9,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Пропускаем auth-эндпоинты без токена
   const isAuthUrl = req.url.includes('/auth/login')
     || req.url.includes('/auth/register')
-    || req.url.includes('/auth/token/refresh');
+    || req.url.includes('/auth/refresh');
 
   const token = auth.getAccessToken();
 

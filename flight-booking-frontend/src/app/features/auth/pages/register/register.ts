@@ -62,10 +62,11 @@ export class RegisterComponent {
     this.isLoading = true;
 
     this.auth.register({
-      email:      this.email,
-      password:   this.password,
-      first_name: this.firstName,
-      last_name:  this.lastName
+        email:            this.email,
+        password:         this.password,
+        password_confirm: this.confirmPassword,
+        first_name:       this.firstName,
+        last_name:        this.lastName
     }).subscribe({
       next: () => {
         this.successMsg = 'Аккаунт создан! Перенаправляем...';

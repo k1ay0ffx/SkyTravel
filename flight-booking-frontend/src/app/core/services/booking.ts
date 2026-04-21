@@ -50,19 +50,18 @@ export class BookingService {
       };
       return of(booking).pipe(delay(600));
     }
-    return this.http.post<Booking>(`${environment.apiUrl}/bookings/`, request);
+    return this.http.post<Booking>(`${environment.apiUrl}/bookings/create/`, request)
   }
 
   getMyBookings(): Observable<Booking[]> {
     if (environment.useMock) return of(MOCK_BOOKINGS).pipe(delay(500));
-    return this.http.get<Booking[]>(`${environment.apiUrl}/bookings/`);
-  }
+    return this.http.get<Booking[]>(`${environment.apiUrl}/bookings/my/`)  }
 
   getBookingById(id: number): Observable<Booking> {
     if (environment.useMock) {
       return of(MOCK_BOOKINGS[0]).pipe(delay(300));
     }
-    return this.http.get<Booking>(`${environment.apiUrl}/bookings/${id}/`);
+    return this.http.get<Booking>(`${environment.apiUrl}/bookings/${id}/`)
   }
 
   processPayment(request: PaymentRequest): Observable<PaymentResponse> {
@@ -75,13 +74,13 @@ export class BookingService {
       };
       return of(resp).pipe(delay(1500));
     }
-    return this.http.post<PaymentResponse>(`${environment.apiUrl}/payments/`, request);
+    return this.http.post<PaymentResponse>(`${environment.apiUrl}/bookings/pay/`, request)
   }
 
   cancelBooking(id: number): Observable<CancelBookingResponse> {
     if (environment.useMock) {
       return of({ success: true, refund_amount: 40000, message: 'Бронирование отменено, возврат в течение 5-7 дней' }).pipe(delay(600));
     }
-    return this.http.put<CancelBookingResponse>(`${environment.apiUrl}/bookings/${id}/cancel/`, {});
+    return this.http.put<CancelBookingResponse>(`${environment.apiUrl}/bookings/${id}/cancel/`, {})
   }
 }

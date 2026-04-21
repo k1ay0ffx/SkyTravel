@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../../core/services/auth';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -18,7 +20,18 @@ export class LoginComponent {
   errorMsg  = '';
   submitted = false;
 
-  constructor(private router: Router) {}
+  private returnUrl = '/';
+
+  constructor(
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private auth: AuthService
+  ) {
+    // Запоминаем куда вернуться после входа
+    this.activatedRoute.queryParams.pipe(take(1)).subscribe(p => {
+      this.returnUrl = p['returnUrl'] || '/';
+    });
+  }
 
   login() {
     this.submitted = true;
@@ -31,19 +44,19 @@ export class LoginComponent {
 
     this.isLoading = true;
 
-    // TODO: заменить на AuthService.login()
-    setTimeout(() => {
-      this.isLoading = false;
-      if (this.email === 'test@test.com' && this.password === '123456') {
-        this.router.navigate(['/']);
-      } else {
-        this.errorMsg = 'Неверный email или пароль';
+    this.auth.login({ email: this.email, password: this.password }).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.router.navigateByUrl(this.returnUrl); // ← редирект обратно
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMsg = err?.error?.detail ?? 'Неверный email или пароль';
       }
-    }, 1000);
+    });
   }
 
   loginWithGoogle() {
     // TODO: OAuth
-    console.log('Google login');
   }
 }

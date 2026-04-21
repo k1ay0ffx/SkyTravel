@@ -87,21 +87,27 @@ export const routes: Routes = [
   },
   {
     path: 'bookings',
-    // canActivate: [authGuard],
+    canActivate: [authGuard],
     loadChildren: () =>
       import('./features/bookings/bookings.routes').then(m => m.BOOKINGS_ROUTES)
   },
   {
     path: 'booking',
-    // canActivate: [authGuard],
-    loadChildren: () =>
-      import('./features/booking/booking.routes').then(m => m.BOOKING_ROUTES)
-  },
-  {
-    path: 'checkout',
-    // canActivate: [authGuard],
-    loadChildren: () =>
-      import('./features/checkout/checkout.routes').then(m => m.CHECKOUT_ROUTES)
+    canActivate: [authGuard],
+    children: [
+      // Теперь этот путь будет работать как /booking/checkout
+      {
+        path: 'checkout',
+        loadChildren: () =>
+          import('./features/checkout/checkout.routes').then(m => m.CHECKOUT_ROUTES)
+      },
+      // Здесь же можно оставить основной путь для /booking
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/booking/booking.routes').then(m => m.BOOKING_ROUTES)
+      }
+    ]
   },
   {
     path: 'profile',

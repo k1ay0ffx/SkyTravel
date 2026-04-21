@@ -187,8 +187,36 @@ input[type=range] {
   &.highlighted { border-color: rgba(255,107,43,0.45); background: rgba(255,107,43,0.05); }
 }
 
+.sbc-input-date {
+  color-scheme: dark;
+  width: 145px;
+}
+
+.pax-counter {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px; padding: 6px 10px;
+}
+
+.pax-btn {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  color: #fff; width: 26px; height: 26px; border-radius: 6px; font-size: 16px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Sans', sans-serif; line-height: 1; transition: all .2s;
+  &:hover { background: rgba(255,107,43,0.15); border-color: rgba(255,107,43,0.3); color: #FF8F5E; }
+}
+
+.pax-sections { display: flex; flex-direction: column; gap: 2px; min-width: 60px; text-align: center; }
+
+.pax-section {
+  display: flex; flex-direction: column;
+  .pax-type { font-size: 9px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: .8px; }
+  .pax-num  { font-size: 15px; font-weight: 700; line-height: 1.2; }
+}
+
 .fc-main {
-  display: grid; grid-template-columns: 160px 1fr 150px;
+  display: grid;
+  grid-template-columns: 1fr auto;  // ← было: 160px 1fr 150px
   gap: 20px; align-items: center; padding: 20px 24px; cursor: pointer;
 }
 
@@ -313,4 +341,34 @@ input[type=range] {
   .fc-price-col   { text-align: left; display: flex; align-items: center; gap: 20px; }
   .fc-select-btn  { width: auto; }
   .exp-grid       { grid-template-columns: 1fr 1fr; }
+}
+
+.sbc-edit-row {
+  display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap;
+}
+
+.sbc-edit-field {
+  display: flex; flex-direction: column; gap: 3px;
+  .sbc-label { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: .8px; }
+}
+
+.sbc-input {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  color: #fff; padding: 7px 12px; border-radius: 8px; font-size: 14px;
+  font-family: 'DM Sans', sans-serif; outline: none; width: 160px;
+  &:focus { border-color: #FF6B2B; }
+}
+
+.sbc-apply {
+  background: #FF6B2B; border: none; color: #fff;
+  padding: 8px 18px; border-radius: 9px; font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 16px;
+  &:hover { background: #FF8F5E; }
+}
+
+.sbc-cancel {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 9px;
+  font-size: 14px; cursor: pointer; margin-top: 16px;
+  &:hover { background: rgba(255,255,255,0.12); color: #fff; }
 }

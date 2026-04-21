@@ -1,20 +1,22 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { Flight, FlightSearchParams, Airport } from '../models/flight.model';
+import {
+  Flight, FlightSearchParams, Airport,
+  FlightRoute, RouteSearchParams, RouteSearchResponse
+} from '../models/flight.model';
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
 const AIRPORTS: Airport[] = [
-  { id: 1, iata_code: 'ALA', name: 'Международный аэропорт Алматы', city: 'Алматы', country: 'Казахстан' },
-  { id: 2, iata_code: 'NQZ', name: 'Аэропорт Астана', city: 'Астана', country: 'Казахстан' },
-  { id: 3, iata_code: 'SVO', name: 'Шереметьево', city: 'Москва', country: 'Россия' },
-  { id: 4, iata_code: 'DXB', name: 'Dubai International', city: 'Дубай', country: 'ОАЭ' },
-  { id: 5, iata_code: 'IST', name: 'Стамбул Аэропорт', city: 'Стамбул', country: 'Турция' },
-  { id: 6, iata_code: 'LHR', name: 'Heathrow', city: 'Лондон', country: 'Великобритания' },
-  { id: 7, iata_code: 'FRA', name: 'Франкфурт', city: 'Франкфурт', country: 'Германия' },
-  { id: 8, iata_code: 'BKK', name: 'Суварнабхуми', city: 'Бангкок', country: 'Таиланд' },
+  { id: 1, iata_code: 'ALA', name: 'Международный аэропорт Алматы', city: 'Алматы',     country: 'Казахстан' },
+  { id: 2, iata_code: 'NQZ', name: 'Аэропорт Астана',               city: 'Астана',     country: 'Казахстан' },
+  { id: 3, iata_code: 'SVO', name: 'Шереметьево',                   city: 'Москва',     country: 'Россия' },
+  { id: 4, iata_code: 'DXB', name: 'Dubai International',           city: 'Дубай',      country: 'ОАЭ' },
+  { id: 5, iata_code: 'IST', name: 'Стамбул Аэропорт',              city: 'Стамбул',    country: 'Турция' },
+  { id: 6, iata_code: 'LHR', name: 'Heathrow',                      city: 'Лондон',     country: 'Великобритания' },
+  { id: 7, iata_code: 'FRA', name: 'Франкфурт',                     city: 'Франкфурт',  country: 'Германия' },
+  { id: 8, iata_code: 'BKK', name: 'Суварнабхуми',                  city: 'Бангкок',    country: 'Таиланд' },
 ];
 
 const MOCK_FLIGHTS: Flight[] = [
@@ -69,7 +71,58 @@ const MOCK_FLIGHTS: Flight[] = [
     aircraft_model: 'Boeing 787-9'
   },
 ];
-// ─────────────────────────────────────────────────────────────────────────────
+
+const MOCK_ROUTES: FlightRoute[] = [
+  {
+    route_type: 'Прямой',
+    total_price: 45000,
+    total_duration_hours: 3.5,
+    departure_datetime: '2025-06-15 06:00',
+    arrival_datetime: '2025-06-15 09:30',
+    flights_from_db: [
+      {
+        segment_number: 1,
+        database_flight_id: 1,
+        origin_city: 'Almaty',
+        destination_city: 'Moscow',
+        departure_time: '2025-06-15 06:00',
+        arrival_time: '2025-06-15 09:30',
+        price_tenge: 45000,
+        airplane_model: 'Boeing 767-300',
+      }
+    ]
+  },
+  {
+    route_type: '1 пересадка',
+    total_price: 38000,
+    total_duration_hours: 7.5,
+    departure_datetime: '2025-06-15 10:30',
+    arrival_datetime: '2025-06-15 18:00',
+    flights_from_db: [
+      {
+        segment_number: 1,
+        database_flight_id: 2,
+        origin_city: 'Almaty',
+        destination_city: 'Istanbul',
+        departure_time: '2025-06-15 10:30',
+        arrival_time: '2025-06-15 14:00',
+        price_tenge: 20000,
+        airplane_model: 'Airbus A321',
+      },
+      {
+        segment_number: 2,
+        database_flight_id: 3,
+        origin_city: 'Istanbul',
+        destination_city: 'Moscow',
+        departure_time: '2025-06-15 15:30',
+        arrival_time: '2025-06-15 18:00',
+        price_tenge: 18000,
+        airplane_model: 'Airbus A320',
+        layover_time_hours: 1.5,
+      }
+    ]
+  },
+];
 
 @Injectable({ providedIn: 'root' })
 export class FlightService {
@@ -77,9 +130,10 @@ export class FlightService {
 
   getAirports(): Observable<Airport[]> {
     if (environment.useMock) return of(AIRPORTS).pipe(delay(200));
-    return this.http.get<Airport[]>(`${environment.apiUrl}/airports/`);
+    return this.http.get<Airport[]>(`${environment.apiUrl}/flights/airports/`);
   }
 
+  // Старый метод — оставлен для обратной совместимости с компонентами на моках
   searchFlights(params: FlightSearchParams): Observable<Flight[]> {
     if (environment.useMock) {
       const filtered = MOCK_FLIGHTS.filter(f =>
@@ -90,6 +144,16 @@ export class FlightService {
     }
     const httpParams = new HttpParams({ fromObject: params as any });
     return this.http.get<Flight[]>(`${environment.apiUrl}/flights/search/`, { params: httpParams });
+  }
+
+  // Новый метод для реального API
+  searchRoutes(params: RouteSearchParams): Observable<FlightRoute[]> {
+    if (environment.useMock) {
+      return of(MOCK_ROUTES).pipe(delay(800));
+    }
+    return this.http
+      .post<RouteSearchResponse>(`${environment.apiUrl}/routes/search/`, params)
+      .pipe(map(r => r.routes));
   }
 
   getFlightById(id: number): Observable<Flight> {

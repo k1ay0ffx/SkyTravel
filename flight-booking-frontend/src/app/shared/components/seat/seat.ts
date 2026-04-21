@@ -88,6 +88,8 @@ export class SeatSelectionComponent implements OnInit {
     this.seatRows = rows;
   }
 
+
+
   getSeatClass(seat: Seat): string {
     if (seat.status === 'occupied') return 'seat-btn occupied';
     if (this.isMySelected(seat))    return 'seat-btn seat-selected';
@@ -95,6 +97,8 @@ export class SeatSelectionComponent implements OnInit {
     if (seat.extra_legroom)         return 'seat-btn extra-legroom';
     return 'seat-btn available';
   }
+
+  
 
   getSeatTitle(seat: Seat): string {
     if (seat.status === 'occupied') return 'Занято';
@@ -153,14 +157,16 @@ export class SeatSelectionComponent implements OnInit {
     this.extraSeatCost = this.selectedSeats.reduce((sum, s) => sum + s.extraCost, 0);
   }
 
-  goToCheckout() {
-    const seatIds = this.selectedSeats.map(s => s.seatId);
-    this.router.navigate(['/checkout'], {
-      queryParams: {
-        flightId:  this.flightId,
-        seatIds:   seatIds.join(','),
-        totalPrice: this.totalPrice,
-      }
-    });
-  }
+  goToCheckout(skipped: boolean = false) {
+  const seatIds = this.selectedSeats.map(s => s.seatId).join(',');
+  
+  this.router.navigate(['/checkout'], { 
+    queryParams: { 
+      flightId: this.flightId, 
+      seatIds: skipped ? '' : seatIds, // Если пропущено, отправляем пустую строку
+      totalPrice: this.totalPrice,
+      skippedSeats: skipped // Добавляем флаг пропуска
+    } 
+  });
+}
 }

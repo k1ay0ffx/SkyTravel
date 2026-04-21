@@ -1,0 +1,232 @@
+<div class="home-page">
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">✦ Лучшие цены на авиабилеты</div>
+
+      <h1>Найди билет до<br>любой точки <em>мира</em></h1>
+      <p>Сравниваем цены сотен авиакомпаний и агентств, чтобы вы нашли самый дешёвый рейс</p>
+
+      <!-- SEARCH BOX -->
+      <div class="search-box">
+        <div class="search-tabs">
+          <button class="tab" [class.active]="tripType==='round'" (click)="tripType='round'">Туда и обратно</button>
+          <button class="tab" [class.active]="tripType==='one'"   (click)="tripType='one'">В одну сторону</button>
+          <button class="tab" [class.active]="tripType==='multi'" (click)="tripType='multi'">Многоцелевой</button>
+        </div>
+
+        <div class="search-row">
+
+          <!-- ОТКУДА -->
+          <div class="search-field">
+            <label>Откуда</label>
+            <input
+              class="city-input"
+              [(ngModel)]="origin"
+              placeholder="Город отправления"
+              (focus)="originFocused = true"
+              (blur)="onOriginBlur()"
+            >
+            <div class="sub">{{ originCode }}</div>
+
+            <!-- Autocomplete dropdown -->
+            <div class="autocomplete" *ngIf="originFocused && originSuggestions.length">
+              <div class="ac-item"
+                   *ngFor="let c of originSuggestions"
+                   (mousedown)="selectOrigin(c)">
+                <span class="ac-city">{{ c.city }}</span>
+                <span class="ac-code">{{ c.code }}</span>
+              </div>
+            </div>
+          </div>
+
+          <button class="swap-btn" (click)="swapCities()" title="Поменять местами">⇄</button>
+
+          <!-- КУДА -->
+          <div class="search-field">
+            <label>Куда</label>
+            <input
+              class="city-input"
+              [(ngModel)]="destination"
+              placeholder="Город назначения"
+              (focus)="destFocused = true"
+              (blur)="onDestBlur()"
+              [class.has-error]="searchAttempted && !destination"
+            >
+            <div class="sub" [class.error-sub]="searchAttempted && !destination">
+              {{ destinationCode || (searchAttempted && !destination ? 'Введите город назначения' : 'Введите город') }}
+            </div>
+
+            <!-- Autocomplete dropdown -->
+            <div class="autocomplete" *ngIf="destFocused && destSuggestions.length">
+              <div class="ac-item"
+                   *ngFor="let c of destSuggestions"
+                   (mousedown)="selectDestination(c)">
+                <span class="ac-city">{{ c.city }}</span>
+                <span class="ac-code">{{ c.code }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ДАТА -->
+          <div class="search-field">
+            <label>{{ tripType === 'round' ? 'Туда — Обратно' : 'Дата вылета' }}</label>
+            <input
+              class="city-input"
+              type="date"
+              [(ngModel)]="departureDateISO"
+              style="color-scheme: dark"
+            >
+            <div class="sub">{{ nightsLabel }}</div>
+          </div>
+
+          <!-- ПАССАЖИРЫ -->
+          <div class="search-field" style="position:relative" (click)="passOpen = !passOpen">
+            <label>Пассажиры</label>
+            <div class="val">{{ passengersLabel }}</div>
+            <div class="sub">{{ cabinClass }}</div>
+
+            <!-- Passengers dropdown -->
+            <div class="pass-dropdown" *ngIf="passOpen" (click)="$event.stopPropagation()">
+              <div class="pd-row">
+                <span>Взрослые</span>
+                <div class="pd-counter">
+                  <button (click)="decrement('adults')">−</button>
+                  <span>{{ adults }}</span>
+                  <button (click)="increment('adults')">+</button>
+                </div>
+              </div>
+              <div class="pd-row">
+                <span>Дети</span>
+                <div class="pd-counter">
+                  <button (click)="decrement('children')">−</button>
+                  <span>{{ children }}</span>
+                  <button (click)="increment('children')">+</button>
+                </div>
+              </div>
+              <div class="pd-cabin">
+                <button *ngFor="let c of cabinOptions"
+                        [class.active]="cabinClass === c"
+                        (click)="cabinClass = c">{{ c }}</button>
+              </div>
+              <button class="pd-done" (click)="passOpen = false">Готово</button>
+            </div>
+          </div>
+
+          <!-- КНОПКА ПОИСКА -->
+          <button class="search-submit"
+                  [disabled]="isSearching"
+                  (click)="searchFlights()">
+            <span *ngIf="!isSearching">🔍 &nbsp; Найти билеты</span>
+            <span *ngIf="isSearching">⏳ &nbsp; Ищем...</span>
+          </button>
+        </div>
+
+        <div class="search-options">
+          <div class="opt-chip" [class.active]="directOnly"  (click)="directOnly  = !directOnly">
+            <div class="dot"></div> Прямые рейсы
+          </div>
+          <div class="opt-chip" [class.active]="flexDates"   (click)="flexDates   = !flexDates">
+            <div class="dot"></div> Гибкие даты ±3 дня
+          </div>
+          <div class="opt-chip" [class.active]="wholeMonth"  (click)="wholeMonth  = !wholeMonth">
+            <div class="dot"></div> Весь месяц
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="num">12<span>M+</span></div>
+          <div class="lbl">авиабилетов</div>
+        </div>
+        <div class="stat-item">
+          <div class="num">500<span>+</span></div>
+          <div class="lbl">авиакомпаний</div>
+        </div>
+        <div class="stat-item">
+          <div class="num">240<span>+</span></div>
+          <div class="lbl">стран</div>
+        </div>
+        <div class="stat-item">
+          <div class="num">4.9<span>★</span></div>
+          <div class="lbl">рейтинг</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── POPULAR DESTINATIONS ── -->
+  <section class="section">
+    <div class="section-head">
+      <h2>Популярные направления</h2>
+      <a routerLink="/flights/results">Все направления →</a>
+    </div>
+    <div class="destinations-grid">
+      <div class="dest-card"
+           *ngFor="let dest of destinations; let i = index"
+           [class.large]="i === 0"
+           (click)="goToSearch(dest)">
+        <div class="dest-fill" [style.background]="dest.gradient">
+          <div class="dest-skyline">{{ dest.emoji }}</div>
+        </div>
+        <div class="dest-overlay"></div>
+        <div class="dest-info">
+          <div class="city">{{ dest.city }}</div>
+          <div class="country">{{ dest.country }} · {{ dest.duration }}</div>
+          <span class="dest-price">от <strong>{{ dest.price | number }} ₸</strong></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOT DEALS ── -->
+  <section class="section">
+    <div class="section-head">
+      <h2>🔥 Горящие билеты</h2>
+      <a routerLink="/flights/results">Все предложения →</a>
+    </div>
+    <div class="deals-grid">
+      <div class="deal-card" *ngFor="let deal of hotDeals" (click)="selectDeal(deal)">
+        <div class="deal-icon">✈</div>
+        <div class="deal-info">
+          <div class="deal-route">
+            {{ deal.from }} <span class="arr">→</span> {{ deal.to }}
+          </div>
+          <div class="deal-meta">{{ deal.airline }} · {{ deal.date }}</div>
+        </div>
+        <div class="deal-price-col">
+          <div class="deal-price">{{ deal.price | number }} ₸</div>
+          <div class="deal-old">{{ deal.oldPrice | number }} ₸</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ── -->
+  <section class="section">
+    <div class="section-head"><h2>Как это работает</h2></div>
+    <div class="steps-grid">
+      <div class="step-card" *ngFor="let step of steps">
+        <div class="step-num">{{ step.num }}</div>
+        <h3>{{ step.title }}</h3>
+        <p>{{ step.desc }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROMO BANNER ── -->
+  <div class="promo-banner">
+    <div class="promo-text">
+      <h2>Подпишитесь на уведомления о скидках</h2>
+      <p>Узнавайте первыми о падении цен на нужные вам направления</p>
+    </div>
+    <div class="promo-form">
+      <input type="email" placeholder="Ваш email" [(ngModel)]="promoEmail">
+      <button class="btn-big" (click)="subscribePromo()">Подписаться</button>
+    </div>
+  </div>
+
+</div>

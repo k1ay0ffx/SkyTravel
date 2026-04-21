@@ -55,11 +55,28 @@ export class CheckoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(p => {
-      if (p['seatIds'])    this.seats     = p['seatIds'].split(',');
-      if (p['totalPrice']) this.basePrice = +p['totalPrice'];
-    });
+  // Читаем маршрут из sessionStorage
+  const stored = sessionStorage.getItem('selectedRoute');
+  if (stored) {
+    try {
+      const route = JSON.parse(stored);
+      this.basePrice   = route.total_price ?? 42500;
+      this.fromCode    = route.flights_from_db?.[0]?.origin_city ?? 'ALA';
+      this.toCode      = route.flights_from_db?.[route.flights_from_db.length - 1]?.destination_city ?? '---';
+      this.depTime     = route.departure_datetime ?? '';
+      this.airline     = route.flights_from_db?.[0]?.airplane_model ?? '';
+    } catch {}
   }
+
+  // Дополнительно из queryParams
+  this.route.queryParams.subscribe(p => {
+    if (p['totalPrice']) this.basePrice = +p['totalPrice'];
+  });
+
+  // Экстры из bookingState
+  const state = this.bookingState.snapshot as any;
+  if (state?.extrasTotal) this.extrasPrice = state.extrasTotal;
+}
 
   formatCard(): void {
     this.cardNumber = this.cardNumber

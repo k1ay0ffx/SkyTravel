@@ -6,6 +6,6 @@
 // ============================================================
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000/api',
-  useMock: true // <-- false когда бэк готов
+  apiUrl: 'http://localhost:8000/api/v1',
+  useMock: false // <-- false когда бэк готов
 };

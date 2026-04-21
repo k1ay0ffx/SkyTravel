@@ -1,14 +1,16 @@
 <div class="results-page">
 
   <!-- ── COMPACT SEARCH BAR ── -->
-  <div class="search-bar-compact">
-    <div class="sbc-inner">
-      <div class="sbc-field" (click)="goBack()">
+ <div class="search-bar-compact">
+  <div class="sbc-inner">
+
+    <ng-container *ngIf="!isEditingSearch">
+      <div class="sbc-field" (click)="openEdit()">
         <span class="sbc-label">Откуда</span>
         <span class="sbc-val">{{ fromCity }}</span>
       </div>
       <div class="sbc-swap">✈</div>
-      <div class="sbc-field">
+      <div class="sbc-field" (click)="openEdit()">
         <span class="sbc-label">Куда</span>
         <span class="sbc-val">{{ toCity }}</span>
       </div>
@@ -21,9 +23,33 @@
         <span class="sbc-label">Пассажиры</span>
         <span class="sbc-val">{{ passengersLabel }}</span>
       </div>
-      <button class="sbc-edit" routerLink="/">✏ Изменить</button>
-    </div>
+      <button class="sbc-edit" (click)="openEdit()">✏ Изменить</button>
+    </ng-container>
+
+    <ng-container *ngIf="isEditingSearch">
+      <div class="sbc-edit-row">
+        <div class="sbc-edit-field">
+          <span class="sbc-label">Откуда</span>
+          <input class="sbc-input" [(ngModel)]="editFrom" placeholder="Город вылета" list="cities-from">
+          <datalist id="cities-from">
+            <option *ngFor="let c of ['Almaty','Astana','Moscow','Istanbul','Dubai','Frankfurt']" [value]="c"></option>
+          </datalist>
+        </div>
+        <div class="sbc-swap">✈</div>
+        <div class="sbc-edit-field">
+          <span class="sbc-label">Куда</span>
+          <input class="sbc-input" [(ngModel)]="editTo" placeholder="Город прилёта" list="cities-to">
+          <datalist id="cities-to">
+            <option *ngFor="let c of ['Almaty','Astana','Moscow','Istanbul','Dubai','Frankfurt']" [value]="c"></option>
+          </datalist>
+        </div>
+        <button class="sbc-apply" (click)="applyEdit()">🔍 Найти</button>
+        <button class="sbc-cancel" (click)="isEditingSearch = false">✕</button>
+      </div>
+    </ng-container>
+
   </div>
+</div>
 
   <div class="results-layout">
 
@@ -34,7 +60,6 @@
         <button class="fp-reset" (click)="resetFilters()">Сбросить</button>
       </div>
 
-      <!-- Price -->
       <div class="filter-group">
         <h4>Цена (₸)</h4>
         <div class="price-row">
@@ -42,11 +67,10 @@
           <span class="price-dash">—</span>
           <input type="number" class="price-input" [(ngModel)]="priceMax" placeholder="До">
         </div>
-        <input type="range" min="0" max="300000" step="1000" [(ngModel)]="priceMax">
+        <input type="range" min="0" max="1000000" step="5000" [(ngModel)]="priceMax">
         <div class="range-hint">до {{ priceMax | number }} ₸</div>
       </div>
 
-      <!-- Stops -->
       <div class="filter-group">
         <h4>Пересадки</h4>
         <label class="check-item" *ngFor="let s of stopOptions">
@@ -55,50 +79,23 @@
           <span class="check-label">{{ s.label }}</span>
           <span class="check-count">{{ s.count }}</span>
         </label>
-      </div>
-
-      <!-- Airlines -->
-      <div class="filter-group">
-        <h4>Авиакомпании</h4>
-        <label class="check-item" *ngFor="let a of airlineOptions">
-          <input type="checkbox" [(ngModel)]="a.checked">
-          <span class="checkmark"></span>
-          <span class="check-label">{{ a.name }}</span>
-          <span class="check-count">от {{ a.minPrice | number }} ₸</span>
-        </label>
-      </div>
-
-      <!-- Departure time -->
-      <div class="filter-group">
-        <h4>Время вылета</h4>
-        <div class="time-grid">
-          <button class="time-chip"
-                  [class.active]="timeFilter === t.val"
-                  (click)="timeFilter = timeFilter === t.val ? '' : t.val"
-                  *ngFor="let t of timeOptions">
-            {{ t.icon }} {{ t.label }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Extras -->
-      <div class="filter-group">
-        <h4>Дополнительно</h4>
-        <label class="check-item">
-          <input type="checkbox" [(ngModel)]="withBaggage">
-          <span class="checkmark"></span>
-          <span class="check-label">Багаж включён</span>
-        </label>
-        <label class="check-item">
-          <input type="checkbox" [(ngModel)]="refundOnly">
-          <span class="checkmark"></span>
-          <span class="check-label">Возврат возможен</span>
-        </label>
         <label class="check-item">
           <input type="checkbox" [(ngModel)]="directOnly">
           <span class="checkmark"></span>
           <span class="check-label">Только прямые</span>
         </label>
+      </div>
+
+      <div class="filter-group">
+        <h4>Время вылета</h4>
+        <div class="time-grid">
+          <button class="time-chip"
+                  *ngFor="let t of timeOptions"
+                  [class.active]="timeFilter === t.val"
+                  (click)="timeFilter = timeFilter === t.val ? '' : t.val">
+            {{ t.icon }} {{ t.label }}
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -108,7 +105,7 @@
       <!-- Sort + count -->
       <div class="results-topbar">
         <div class="results-count">
-          <span *ngIf="!isLoading">Найдено <strong>{{ filteredFlights.length }}</strong> рейсов</span>
+          <span *ngIf="!isLoading">Найдено <strong>{{ filteredRoutes.length }}</strong> маршрутов</span>
           <span *ngIf="isLoading" class="loading-text">Ищем лучшие цены...</span>
         </div>
         <div class="sort-row">
@@ -135,78 +132,68 @@
         <button class="cal-arrow" (click)="shiftCalendar(1)">›</button>
       </div>
 
-      <!-- Skeleton loader -->
+      <!-- Skeleton -->
       <ng-container *ngIf="isLoading">
         <div class="skeleton-card" *ngFor="let i of [1,2,3,4]"></div>
       </ng-container>
 
-      <!-- Cabin class tabs -->
-      <div class="cabin-tabs" *ngIf="!isLoading">
-        <button class="cabin-tab" [class.active]="cabinClass==='economy'"  (click)="cabinClass='economy'">
-          Эконом
-          <span class="cabin-price">от {{ minPriceEconomy | number }} ₸</span>
-        </button>
-        <button class="cabin-tab" [class.active]="cabinClass==='business'" (click)="cabinClass='business'">
-          Бизнес
-          <span class="cabin-price">от {{ minPriceBusiness | number }} ₸</span>
-        </button>
+      <!-- Error -->
+      <div class="error-msg" *ngIf="!isLoading && errorMsg">
+        <span>⚠ {{ errorMsg }}</span>
+        <button (click)="loadRoutes()">Повторить</button>
       </div>
 
-      <!-- Flight cards -->
-      <ng-container *ngIf="!isLoading">
+      <!-- Route cards -->
+      <ng-container *ngIf="!isLoading && !errorMsg">
+
         <div class="flight-card-wrap"
-             *ngFor="let flight of filteredFlights"
-             [class.highlighted]="flight.id === selectedFlightId">
+             *ngFor="let route of filteredRoutes; let i = index"
+             [class.highlighted]="selectedIndex === i">
 
-          <div class="fc-main" (click)="toggleDetails(flight.id)">
+          <div class="fc-main" (click)="toggleDetails(i)">
 
-            <!-- Airline -->
-            <div class="fc-airline">
-              <div class="fc-logo">{{ flight.airline.iata_code }}</div>
-              <div>
-                <div class="fc-airline-name">{{ flight.airline.name }}</div>
-                <div class="fc-num">{{ flight.flight_number }}</div>
-              </div>
-            </div>
-
-            <!-- Route -->
+            <!-- Первый и последний сегмент -->
             <div class="fc-route">
               <div class="fc-time-block">
-                <div class="fc-time">{{ flight.departure_time | date:'HH:mm' }}</div>
-                <div class="fc-code">{{ flight.origin.iata_code }}</div>
-                <div class="fc-city">{{ flight.origin.city }}</div>
+                <div class="fc-time">{{ route.departure_datetime | slice:11:16 }}</div>
+                <div class="fc-city">{{ route.flights_from_db[0].origin_city }}</div>
               </div>
 
               <div class="fc-middle">
-                <div class="fc-dur">{{ formatDuration(flight.duration_minutes) }}</div>
+                <div class="fc-dur">{{ formatDuration(route.total_duration_hours) }}</div>
                 <div class="fc-line">
                   <div class="fc-dot"></div>
-                  <div class="fc-dash"></div>
-                  <div class="fc-plane">✈</div>
+
+                  <!-- Пересадки -->
+                  <ng-container *ngFor="let seg of route.flights_from_db; let last = last">
+                    <div class="fc-dash"></div>
+                    <div class="fc-plane" *ngIf="last">✈</div>
+                    <div class="fc-stop-dot" *ngIf="!last" [title]="seg.destination_city"></div>
+                  </ng-container>
+
                   <div class="fc-dash"></div>
                   <div class="fc-dot"></div>
                 </div>
-                <div class="fc-stops" [class.direct]="flight.stops===0" [class.one-stop]="flight.stops===1">
-                  {{ flight.stops === 0 ? 'Прямой' : flight.stops === 1 ? '1 пересадка' : flight.stops + ' пересадки' }}
+                <div class="fc-stops"
+                     [class.direct]="route.flights_from_db.length === 1"
+                     [class.one-stop]="route.flights_from_db.length === 2">
+                  {{ stopsLabel(route) }}
                 </div>
               </div>
 
               <div class="fc-time-block right">
-                <div class="fc-time">{{ flight.arrival_time | date:'HH:mm' }}</div>
-                <div class="fc-code">{{ flight.destination.iata_code }}</div>
-                <div class="fc-city">{{ flight.destination.city }}</div>
+                <div class="fc-time">{{ route.arrival_datetime | slice:11:16 }}</div>
+                <div class="fc-city">
+                  {{ route.flights_from_db[route.flights_from_db.length - 1].destination_city }}
+                </div>
               </div>
             </div>
 
             <!-- Price -->
             <div class="fc-price-col">
-              <div class="fc-price">
-                {{ (cabinClass === 'economy' ? flight.price_economy : flight.price_business) | number }}
-                <span>₸</span>
-              </div>
-              <div class="fc-per">за 1 пас.</div>
-              <button class="fc-select-btn"
-                      (click)="selectFlight(flight); $event.stopPropagation()">
+              <div class="fc-price">{{ route.total_price | number }}<span>₸</span></div>
+              <div class="fc-per">за маршрут</div>
+              <button class="fc-select-btn" (click)="selectRoute(route, i); $event.stopPropagation()">
                 Выбрать
               </button>
             </div>
@@ -214,38 +201,54 @@
 
           <!-- Tags -->
           <div class="fc-tags">
-            <span class="fc-tag">🧳 {{ flight.available_seats_economy }} мест</span>
-            <span class="fc-tag">✈ {{ flight.aircraft_model }}</span>
-            <span class="fc-tag green" *ngIf="flight.stops === 0">Прямой рейс</span>
-            <span class="fc-tag spacer"></span>
-            <button class="fc-detail-btn" (click)="viewDetails(flight); $event.stopPropagation()">
-              Детали рейса ›
-            </button>
+            <span class="fc-tag">⏱ {{ formatDuration(route.total_duration_hours) }}</span>
+            <span class="fc-tag">✈ {{ route.route_type }}</span>
+            <span class="fc-tag green" *ngIf="route.flights_from_db.length === 1">Прямой рейс</span>
           </div>
 
-          <!-- Expanded details -->
-          <div class="fc-expanded" *ngIf="expandedId === flight.id">
-            <div class="exp-grid">
-              <div class="exp-item"><span class="exp-l">Самолёт</span><span>{{ flight.aircraft_model }}</span></div>
-              <div class="exp-item"><span class="exp-l">Длительность</span><span>{{ formatDuration(flight.duration_minutes) }}</span></div>
-              <div class="exp-item"><span class="exp-l">Эконом</span><span>{{ flight.price_economy | number }} ₸</span></div>
-              <div class="exp-item"><span class="exp-l">Бизнес</span><span>{{ flight.price_business | number }} ₸</span></div>
-              <div class="exp-item"><span class="exp-l">Мест (эконом)</span><span>{{ flight.available_seats_economy }}</span></div>
-              <div class="exp-item"><span class="exp-l">Мест (бизнес)</span><span>{{ flight.available_seats_business }}</span></div>
+          <!-- Expanded: сегменты маршрута -->
+          <div class="fc-expanded" *ngIf="expandedIndex === i">
+            <div class="segments">
+              <div class="segment" *ngFor="let seg of route.flights_from_db">
+
+                <div class="seg-header">
+                  <span class="seg-num">Рейс {{ seg.segment_number }}</span>
+                  <span class="seg-plane">{{ seg.airplane_model }}</span>
+                </div>
+
+                <div class="seg-route">
+                  <div class="seg-point">
+                    <div class="seg-time">{{ seg.departure_time | slice:11:16 }}</div>
+                    <div class="seg-city">{{ seg.origin_city }}</div>
+                  </div>
+                  <div class="seg-arrow">→</div>
+                  <div class="seg-point">
+                    <div class="seg-time">{{ seg.arrival_time | slice:11:16 }}</div>
+                    <div class="seg-city">{{ seg.destination_city }}</div>
+                  </div>
+                  <div class="seg-price">{{ seg.price_tenge | number }} ₸</div>
+                </div>
+
+                <!-- Пересадка -->
+                <div class="seg-layover" *ngIf="seg.layover_time_hours">
+                  🕐 Пересадка в {{ seg.destination_city }}: {{ seg.layover_time_hours }}ч
+                </div>
+
+              </div>
             </div>
           </div>
 
         </div>
 
         <!-- No results -->
-        <div class="no-results" *ngIf="filteredFlights.length === 0">
+        <div class="no-results" *ngIf="filteredRoutes.length === 0">
           <div class="nr-icon">✈</div>
-          <h3>Рейсы не найдены</h3>
+          <h3>Маршруты не найдены</h3>
           <p>Попробуйте изменить фильтры или выбрать другие даты</p>
           <button class="nr-btn" (click)="resetFilters()">Сбросить фильтры</button>
         </div>
-      </ng-container>
 
+      </ng-container>
     </main>
   </div>
 </div>

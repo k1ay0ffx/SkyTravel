@@ -5,6 +5,7 @@ import { tap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { User, AuthTokens, LoginRequest, RegisterRequest } from '../models/user.model';
 
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
@@ -13,6 +14,8 @@ export class AuthService {
   private readonly TOKEN_KEY = 'st_access';
   private readonly REFRESH_KEY = 'st_refresh';
   private readonly USER_KEY = 'st_user';
+  private isLoggedInSubject = new BehaviorSubject<boolean>(!!localStorage.getItem('st_access'));  
+  isLoggedIn$ = this.isLoggedInSubject.asObservable();
 
   constructor(private http: HttpClient) {
     this.restoreSession();
@@ -49,31 +52,33 @@ export class AuthService {
     if (userStr && this.getAccessToken()) {
       try {
         this.currentUserSubject.next(JSON.parse(userStr));
+        this.isLoggedInSubject.next(true);
       } catch {}
     }
   }
 
   login(credentials: LoginRequest): Observable<AuthTokens> {
-    if (environment.useMock) {
-      if (credentials.email && credentials.password) {
-        const tokens: AuthTokens = { access: 'mock_access', refresh: 'mock_refresh' };
-        const user: User = {
-          id: 1, email: credentials.email,
-          first_name: 'Александр', last_name: 'Смирнов',
-          phone: '+7 777 123 45 67', nationality: 'KZ'
-        };
-        this.saveTokens(tokens);
-        this.saveUser(user);
-        return of(tokens);
-      }
-      return throwError(() => ({ error: { detail: 'Неверный email или пароль' } }));
-    }
+    // if (environment.useMock) {
+    //   if (credentials.email && credentials.password) {
+    //     const tokens: AuthTokens = { access: 'mock_access', refresh: 'mock_refresh' };
+    //     const user: User = {
+    //       id: 1, email: credentials.email,
+    //       first_name: 'Александр', last_name: 'Смирнов',
+    //       phone: '+7 777 123 45 67', nationality: 'KZ'
+    //     };
+    //     this.saveTokens(tokens);
+    //     this.saveUser(user);
+    //     return of(tokens);
+    //   }
+    //   return throwError(() => ({ error: { detail: 'Неверный email или пароль' } }));
+    // }
     return this.http.post<AuthTokens>(`${environment.apiUrl}/auth/login/`, credentials).pipe(
-      tap(tokens => {
-        this.saveTokens(tokens);
-        this.fetchCurrentUser().subscribe();
-      })
-    );
+  tap(tokens => {
+    this.saveTokens(tokens);
+    this.isLoggedInSubject.next(true); // Добавляем эту строку
+    this.fetchCurrentUser().subscribe();
+  })
+);
   }
 
   register(data: RegisterRequest): Observable<AuthTokens> {
@@ -91,21 +96,23 @@ export class AuthService {
       tap(tokens => {
         this.saveTokens(tokens);
         this.fetchCurrentUser().subscribe();
+        this.isLoggedInSubject.next(true);
       })
     );
   }
 
   logout(): Observable<any> {
-    const refresh = this.getRefreshToken();
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    this.currentUserSubject.next(null);
-    if (environment.useMock) return of(null);
-    return this.http.post(`${environment.apiUrl}/auth/logout/`, { refresh }).pipe(
-      catchError(() => of(null))
-    );
-  }
+  const refresh = this.getRefreshToken();
+  localStorage.removeItem(this.TOKEN_KEY);
+  localStorage.removeItem(this.REFRESH_KEY);
+  localStorage.removeItem(this.USER_KEY);
+  this.currentUserSubject.next(null);
+  this.isLoggedInSubject.next(false); 
+  if (environment.useMock) return of(null);
+  return this.http.post(`${environment.apiUrl}/auth/logout/`, { refresh }).pipe(
+    catchError(() => of(null))
+  );
+}
 
   refreshToken(): Observable<AuthTokens> {
     const refresh = this.getRefreshToken();
@@ -115,7 +122,7 @@ export class AuthService {
       this.saveTokens(tokens);
       return of(tokens);
     }
-    return this.http.post<AuthTokens>(`${environment.apiUrl}/auth/token/refresh/`, { refresh }).pipe(
+    return this.http.post<AuthTokens>(`${environment.apiUrl}/auth/refresh/`, { refresh }).pipe(
       tap(tokens => this.saveTokens(tokens))
     );
   }
@@ -125,7 +132,7 @@ export class AuthService {
       const existing = this.currentUserSubject.value;
       return of(existing || { id: 1, email: 'user@example.com', first_name: 'Пользователь', last_name: '' });
     }
-    return this.http.get<User>(`${environment.apiUrl}/profile/`).pipe(
+    return this.http.get<User>(`${environment.apiUrl}/auth/me/`).pipe(
       tap(user => this.saveUser(user))
     );
   }

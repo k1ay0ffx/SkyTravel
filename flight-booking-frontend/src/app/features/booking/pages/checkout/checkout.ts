@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BookingService } from '../../../../core/services/booking';
 import { BookingStateService } from '../../../../core/services/booking-state';
-import { PaymentRequest, PaymentResponse } from '../../../../core/models/booking.model';
+import { PaymentRequest, PaymentResponse, CreateBookingRequest, Passenger } from '../../../../core/models/booking.model';
 
 type CheckoutStep = 'passenger' | 'payment' | 'success';
 
@@ -25,13 +25,13 @@ export class CheckoutComponent implements OnInit {
   error         = '';
   paymentResult: PaymentResponse | null = null;
 
-  // Pulled from booking state
-  flightSummary = { from: 'ALA', to: 'SVO', date: '10 июл 2025', flight: 'KC123', price: 45000 };
+  private bookingId: number | null = null;
+
+  // Данные для order summary — заполняются из state
+  flightSummary = { from: '—', to: '—', date: '—', flight: '—', price: 0 };
   extrasTotal   = 0;
 
-  get orderTotal(): number {
-    return this.flightSummary.price + this.extrasTotal;
-  }
+  get orderTotal(): number { return this.flightSummary.price + this.extrasTotal; }
 
   constructor(
     private fb:           FormBuilder,
@@ -41,15 +41,34 @@ export class CheckoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // Читаем состояние бронирования
+    const draft = this.bookingState.snapshot;
+
+    // extrasTotal из моковых цен (в реальном приложении — из ExtrasService)
+    const EXTRAS_PRICES: Record<number, number> = { 1:5000, 2:8000, 3:2500, 4:2500, 5:2500, 6:2000, 7:5000 };
+    this.extrasTotal = draft.extraIds.reduce((s, id) => s + (EXTRAS_PRICES[id] ?? 0), 0);
+
+    // flightSummary — в реальном флоу грузить через FlightService.getFlightById
+    // Пока заполняем что есть из state
+    if (draft.flightId) {
+      this.flightSummary = {
+        from:   '—',
+        to:     '—',
+        date:   '—',
+        flight: `ID ${draft.flightId}`,
+        price:  0  // заменить на реальную цену из FlightService
+      };
+    }
+
     this.passengerForm = this.fb.group({
-      first_name:       ['', [Validators.required, Validators.minLength(2)]],
-      last_name:        ['', [Validators.required, Validators.minLength(2)]],
-      date_of_birth:    ['', Validators.required],
-      passport_number:  ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{6,9}$/i)]],
-      passport_expiry:  ['', Validators.required],
-      nationality:      ['', [Validators.required, Validators.minLength(2)]],
-      email:            ['', [Validators.required, Validators.email]],
-      phone:            ['']
+      first_name:      ['', [Validators.required, Validators.minLength(2)]],
+      last_name:       ['', [Validators.required, Validators.minLength(2)]],
+      date_of_birth:   ['', Validators.required],
+      passport_number: ['', [Validators.required, Validators.pattern(/^[A-Z0-9]{6,9}$/i)]],
+      passport_expiry: ['', Validators.required],
+      nationality:     ['', [Validators.required, Validators.minLength(2)]],
+      email:           ['', [Validators.required, Validators.email]],
+      phone:           ['']
     });
 
     this.paymentForm = this.fb.group({
@@ -60,21 +79,42 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  /* ── Step 1: passenger ─────────────────────────────────── */
   submitPassenger(): void {
     if (this.passengerForm.invalid) { this.passengerForm.markAllAsTouched(); return; }
-    this.step = 'payment';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Создаём бронирование после заполнения данных пассажира
+    const draft = this.bookingState.snapshot;
+    const passenger: Passenger = this.passengerForm.value;
+
+    const req: CreateBookingRequest = {
+      flight_id:   draft.flightId!,
+      seat_ids:    draft.seatIds,
+      passengers:  [passenger],
+      extra_ids:   draft.extraIds,
+      cabin_class: draft.cabinClass
+    };
+
+    this.bookingSvc.createBooking(req).subscribe({
+      next: (booking) => {
+        this.bookingId = booking.id;
+        this.step = 'payment';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      },
+      error: (err) => {
+        this.error = err?.error?.detail ?? 'Ошибка создания бронирования';
+      }
+    });
   }
 
-  /* ── Step 2: payment ───────────────────────────────────── */
   submitPayment(): void {
     if (this.paymentForm.invalid) { this.paymentForm.markAllAsTouched(); return; }
+    if (!this.bookingId) { this.error = 'Бронирование не создано'; return; }
+
     this.submitting = true;
     this.error      = '';
 
     const payload: PaymentRequest = {
-      booking_id:      1, // from booking state in real flow
+      booking_id:      this.bookingId,
       cardholder_name: this.paymentForm.value.cardholder_name,
       card_number:     this.paymentForm.value.card_number,
       card_expiry:     this.paymentForm.value.card_expiry,
@@ -84,9 +124,12 @@ export class CheckoutComponent implements OnInit {
     this.bookingSvc.processPayment(payload).subscribe({
       next: (res) => {
         this.paymentResult = res;
-        this.step          = 'success';
+        this.bookingState.reset();
         this.submitting    = false;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Переходим на confirmation с номером бронирования
+        this.router.navigate(['/booking/confirmation'], {
+          queryParams: { ref: res.booking_reference }
+        });
       },
       error: (err) => {
         this.error      = err?.error?.detail ?? 'Ошибка оплаты. Проверьте данные карты.';
@@ -95,24 +138,23 @@ export class CheckoutComponent implements OnInit {
     });
   }
 
-  /* ── Card number formatting ────────────────────────────── */
   formatCard(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const digits = input.value.replace(/\D/g, '').slice(0, 16);
+    const input   = event.target as HTMLInputElement;
+    const digits  = input.value.replace(/\D/g, '').slice(0, 16);
     const formatted = digits.match(/.{1,4}/g)?.join(' ') ?? digits;
-    input.value = formatted;
+    input.value   = formatted;
     this.paymentForm.get('card_number')?.setValue(formatted, { emitEvent: false });
   }
 
   formatExpiry(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const digits = input.value.replace(/\D/g, '').slice(0, 4);
+    const input   = event.target as HTMLInputElement;
+    const digits  = input.value.replace(/\D/g, '').slice(0, 4);
     const formatted = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
-    input.value = formatted;
+    input.value   = formatted;
     this.paymentForm.get('card_expiry')?.setValue(formatted, { emitEvent: false });
   }
 
-  goHome(): void { this.router.navigate(['/']); }
+  goHome():     void { this.router.navigate(['/']); }
   goBookings(): void { this.router.navigate(['/profile/my-bookings']); }
 
   err(form: FormGroup, field: string, rule: string): boolean {

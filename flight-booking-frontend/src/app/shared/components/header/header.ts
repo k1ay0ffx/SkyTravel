@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/services/auth';
 
 @Component({
   selector: 'app-header',
@@ -18,9 +19,11 @@ export class HeaderComponent implements OnInit {
   selectedCurrency = 'KZT';
   userInitials = 'АИ';
 
-  constructor(private router: Router) {}
+  constructor(private auth: AuthService, private router: Router) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.auth.isLoggedIn$.subscribe(v => this.isLoggedIn = v);
+  }
 
   @HostListener('window:scroll')
   onScroll() {
@@ -40,7 +43,8 @@ export class HeaderComponent implements OnInit {
   }
 
   logout() {
-    this.isLoggedIn = false;
-    this.router.navigate(['/']);
-  }
+  this.auth.logout();
+  this.menuOpen = false;
+  this.router.navigate(['/']);
+}
 }
